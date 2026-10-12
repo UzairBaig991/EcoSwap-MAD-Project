@@ -1,0 +1,392 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../data/models/listing_model.dart';
+import '../providers/home_provider.dart';
+import '../widgets/listing_card.dart';
+
+class HomeScreen extends ConsumerStatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  GoogleMapController? _mapController;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  void _showFilterModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final filter = ref.watch(homeFilterProvider);
+            final notifier = ref.read(homeFilterProvider.notifier);
+
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Filter Listings',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          notifier.resetFilters();
+                          _searchController.clear();
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Reset All'),
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+                  const SizedBox(height: 12),
+
+                  // Radius Filter
+                  Text(
+                    'Search Radius (${filter.radiusKm.round()} km)',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  SegmentedButton<double>(
+                    segments: AppConstants.radiusOptions.map((r) {
+                      return ButtonSegment(value: r, label: Text('${r.round()} km'));
+                    }).toList(),
+                    selected: {filter.radiusKm},
+                    onSelectionChanged: (set) => notifier.setRadius(set.first),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Listing Type
+                  const Text('Type', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: ['All', ...AppConstants.listingTypes].map((t) {
+                      return ChoiceChip(
+                        label: Text(t),
+                        selected: filter.selectedType == t,
+                        onSelected: (selected) {
+                          if (selected) notifier.setType(t);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Condition
+                  const Text('Condition', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: ['All', ...AppConstants.conditions].map((c) {
+                      return ChoiceChip(
+                        label: Text(c),
+                        selected: filter.selectedCondition == c,
+                        onSelected: (selected) {
+                          if (selected) notifier.setCondition(c);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 28),
+
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Apply Filters'),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showListingMapPreview(ListingModel listing) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: ListingCard(
+            listing: listing,
+            userLat: ref.read(homeFilterProvider).userLat,
+            userLng: ref.read(homeFilterProvider).userLng,
+          ),
+        );
+      },
+    );
+  }
+
+  Set<Marker> _buildMapMarkers(List<ListingModel> listings) {
+    return listings.map((item) {
+      BitmapDescriptor hue;
+      if (item.type == 'Free') {
+        hue = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+      } else if (item.type == 'Swap') {
+        hue = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
+      } else {
+        hue = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange);
+      }
+
+      return Marker(
+        markerId: MarkerId(item.id),
+        position: LatLng(item.location.lat, item.location.lng),
+        icon: hue,
+        infoWindow: InfoWindow(
+          title: item.title,
+          snippet: '${item.category} • ${item.type}',
+        ),
+        onTap: () => _showListingMapPreview(item),
+      );
+    }).toSet();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final filter = ref.watch(homeFilterProvider);
+    final filterNotifier = ref.read(homeFilterProvider.notifier);
+    final listingsAsync = ref.watch(nearbyListingsStreamProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        titleSpacing: 16,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.primaryContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.swap_horizontal_circle_rounded,
+                color: AppColors.primary,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'EcoSwap',
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          // Filter Button
+          IconButton(
+            icon: const Icon(Icons.tune_rounded),
+            tooltip: 'Filter',
+            onPressed: _showFilterModal,
+          ),
+
+          // Map/List View Toggle
+          IconButton(
+            icon: Icon(
+              filter.isMapView ? Icons.view_list_rounded : Icons.map_rounded,
+              color: AppColors.primary,
+            ),
+            tooltip: filter.isMapView ? 'List View' : 'Map View',
+            onPressed: () => filterNotifier.toggleViewMode(),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Search & Category Header
+          Container(
+            color: theme.scaffoldBackgroundColor,
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Column(
+              children: [
+                // Search Bar Field
+                TextField(
+                  controller: _searchController,
+                  onChanged: (value) => filterNotifier.setSearchQuery(value),
+                  decoration: InputDecoration(
+                    hintText: 'Search items, clothing, books...',
+                    prefixIcon: const Icon(Icons.search_rounded),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded),
+                            onPressed: () {
+                              _searchController.clear();
+                              filterNotifier.setSearchQuery('');
+                            },
+                          )
+                        : null,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Horizontal Category Selector Chips
+                SizedBox(
+                  height: 38,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: ['All', ...AppConstants.categories].map((category) {
+                      final isSelected = filter.selectedCategory == category;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(category),
+                          selected: isSelected,
+                          selectedColor: AppColors.primaryContainer,
+                          labelStyle: TextStyle(
+                            color: isSelected ? AppColors.primaryDark : theme.textTheme.bodyMedium?.color,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                          onSelected: (selected) {
+                            if (selected) filterNotifier.setCategory(category);
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Main View (Map or List)
+          Expanded(
+            child: listingsAsync.when(
+              data: (listings) {
+                if (filter.isMapView) {
+                  // MAP VIEW
+                  return GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(filter.userLat, filter.userLng),
+                      zoom: 12,
+                    ),
+                    onMapCreated: (controller) => _mapController = controller,
+                    markers: _buildMapMarkers(listings),
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: true,
+                    zoomControlsEnabled: false,
+                  );
+                }
+
+                // LIST VIEW
+                if (listings.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.search_off_rounded,
+                            size: 72,
+                            color: AppColors.textMutedLight,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            AppStrings.emptyListings,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Try expanding your search radius or clearing active filters.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          OutlinedButton(
+                            onPressed: () {
+                              filterNotifier.resetFilters();
+                              _searchController.clear();
+                            },
+                            child: const Text('Reset All Filters'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    ref.invalidate(nearbyListingsStreamProvider);
+                  },
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: listings.length,
+                    itemBuilder: (context, index) {
+                      final item = listings[index];
+                      return ListingCard(
+                        listing: item,
+                        userLat: filter.userLat,
+                        userLng: filter.userLng,
+                      );
+                    },
+                  ),
+                );
+              },
+              loading: () => ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: 4,
+                itemBuilder: (_, __) => Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Shimmer.fromColors(
+                    baseColor: Colors.grey.shade300,
+                    highlightColor: Colors.grey.shade100,
+                    child: Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              error: (err, stack) => Center(
+                child: Text('Error loading listings: $err'),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

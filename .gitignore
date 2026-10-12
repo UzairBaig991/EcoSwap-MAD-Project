@@ -1,0 +1,53 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ-related
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Flutter/Dart specific
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Symbol files
+app.*.symbols
+app.*.map.json
+
+# Obfuscation map files
+obfuscation_map.json
+
+# Android
+android/app/debug
+android/app/profile
+android/app/release
+android/key.properties
+
+# iOS
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
+ios/Runner/Runner.xcodeproj/project.xcworkspace
+ios/Runner/Runner.xcodeproj/xcuserdata
+ios/Pods/
+ios/.symlinks/
+
+# Environment
+.env
+google-services.json
+GoogleService-Info.plist
