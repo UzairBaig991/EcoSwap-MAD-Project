@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "EcoSwap (Chrome HTML)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args": [
+                "-d",
+                "chrome",
+                "--web-renderer",
+                "html"
+            ]
+        },
+        {
+            "name": "EcoSwap (Android / Mobile)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart"
+        }
+    ]
+}

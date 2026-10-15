@@ -59,10 +59,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(error),
-            backgroundColor: AppColors.error,
+            backgroundColor: error.contains('cancelled') ? AppColors.warning : AppColors.error,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
+    }
+  }
+
+  Future<void> _handleFacebookSignIn() async {
+    final success = await ref.read(authControllerProvider.notifier).signInWithFacebook();
+    if (success && mounted) {
+      context.go('/home');
+    } else if (mounted) {
+      final error = ref.read(authControllerProvider).errorMessage;
+      if (error != null && error.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error),
+            backgroundColor: AppColors.warning,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleGuestSignIn() async {
+    final success = await ref.read(authControllerProvider.notifier).signInAnonymously();
+    if (success && mounted) {
+      context.go('/home');
     }
   }
 
@@ -86,7 +112,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Center(
                     child: Container(
                       padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppColors.primaryContainer,
                         shape: BoxShape.circle,
                       ),
@@ -113,7 +139,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 28),
 
                   // Email Field
                   TextFormField(
@@ -178,7 +204,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       child: const Text(AppStrings.forgotPassword),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
                   // Sign In Button
                   ElevatedButton(
@@ -192,27 +218,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
-                        : const Text('Sign In'),
+                        : const Text('Sign In with Email'),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
                   // Divider
                   Row(
                     children: [
                       Expanded(child: Divider(color: theme.colorScheme.outline)),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Text(
-                          'OR',
-                          style: theme.textTheme.labelMedium?.copyWith(
+                          'OR SOCIAL SIGN IN',
+                          style: theme.textTheme.labelSmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                       Expanded(child: Divider(color: theme.colorScheme.outline)),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
                   // Google Sign In Button
                   OutlinedButton.icon(
@@ -220,7 +247,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
                     label: const Text(AppStrings.googleSignIn),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 10),
+
+                  // Facebook Sign In Button
+                  OutlinedButton.icon(
+                    onPressed: isLoading ? null : _handleFacebookSignIn,
+                    icon: const Icon(Icons.facebook_rounded, color: Color(0xFF1877F2), size: 22),
+                    label: const Text('Continue with Facebook'),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Guest Sign In Quick Option
+                  TextButton.icon(
+                    onPressed: isLoading ? null : _handleGuestSignIn,
+                    icon: const Icon(Icons.explore_outlined, size: 20),
+                    label: const Text('Explore as Guest (No Login Required)'),
+                  ),
+                  const SizedBox(height: 16),
 
                   // Sign Up Link
                   Row(

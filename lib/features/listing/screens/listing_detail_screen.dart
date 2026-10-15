@@ -10,7 +10,9 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../data/models/listing_model.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../favorites/providers/favorites_provider.dart';
 import '../providers/listing_provider.dart';
+import '../widgets/leave_review_dialog.dart';
 
 class ListingDetailScreen extends ConsumerStatefulWidget {
   final String listingId;
@@ -22,7 +24,6 @@ class ListingDetailScreen extends ConsumerStatefulWidget {
 
 class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
   int _currentImageIndex = 0;
-  bool _isFavorited = false;
 
   Widget _buildImageWidget(String url) {
     if (url.startsWith('data:image')) {
@@ -99,6 +100,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     final theme = Theme.of(context);
     final listingAsync = ref.watch(singleListingProvider(widget.listingId));
     final currentUser = ref.watch(currentUserModelProvider).asData?.value;
+    final favoriteIds = ref.watch(favoritesControllerProvider);
 
     return Scaffold(
       body: listingAsync.when(
@@ -111,6 +113,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
           }
 
           final isOwner = currentUser?.uid == item.ownerId;
+          final isFavorited = favoriteIds.contains(item.id);
 
           return CustomScrollView(
             slivers: [
@@ -141,16 +144,14 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     backgroundColor: Colors.black45,
                     child: IconButton(
                       icon: Icon(
-                        _isFavorited ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                        color: _isFavorited ? AppColors.error : Colors.white,
+                        isFavorited ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        color: isFavorited ? AppColors.error : Colors.white,
                       ),
                       onPressed: () {
-                        setState(() {
-                          _isFavorited = !_isFavorited;
-                        });
+                        ref.read(favoritesControllerProvider.notifier).toggleFavorite(item);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(_isFavorited ? 'Added to Saved Favorites' : 'Removed from Saved Favorites'),
+                            content: Text(isFavorited ? 'Removed from Saved Favorites' : 'Added to Saved Favorites'),
                             duration: const Duration(seconds: 1),
                           ),
                         );
@@ -187,7 +188,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.black65,
+                              color: Colors.black.withOpacity(0.65),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -482,6 +483,17 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                                   const SnackBar(
                                     content: Text('Marked as Completed! CO₂ saved added to profile 🎉'),
                                     backgroundColor: AppColors.success,
+                                  ),
+                                );
+                                // Prompt owner to review
+                                showDialog(
+                                  context: context,
+                                  builder: (ctx) => LeaveReviewDialog(
+                                    listingId: item.id,
+                                    fromUserId: currentUser!.uid,
+                                    fromUserName: currentUser.displayName,
+                                    fromUserPhoto: currentUser.photoUrl,
+                                    toUserId: item.claimedByUserId ?? '',
                                   ),
                                 );
                               }

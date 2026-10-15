@@ -191,10 +191,10 @@ class _EditListingScreenState extends ConsumerState<EditListingScreen> {
                                   right: 10,
                                   child: InkWell(
                                     onTap: () => setState(() => _retainedImages.remove(url)),
-                                    child: const CircleAvatar(
+                                    child: CircleAvatar(
                                       radius: 12,
-                                      backgroundColor: Colors.black80,
-                                      child: Icon(Icons.close, size: 14, color: Colors.white),
+                                      backgroundColor: Colors.black.withOpacity(0.80),
+                                      child: const Icon(Icons.close, size: 14, color: Colors.white),
                                     ),
                                   ),
                                 ),
@@ -216,10 +216,10 @@ class _EditListingScreenState extends ConsumerState<EditListingScreen> {
                                   right: 10,
                                   child: InkWell(
                                     onTap: () => setState(() => _newImageFiles.remove(file)),
-                                    child: const CircleAvatar(
+                                    child: CircleAvatar(
                                       radius: 12,
-                                      backgroundColor: Colors.black80,
-                                      child: Icon(Icons.close, size: 14, color: Colors.white),
+                                      backgroundColor: Colors.black.withOpacity(0.80),
+                                      child: const Icon(Icons.close, size: 14, color: Colors.white),
                                     ),
                                   ),
                                 ),

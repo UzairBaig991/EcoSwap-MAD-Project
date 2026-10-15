@@ -5,6 +5,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../listing/screens/create_listing_screen.dart';
 import '../../profile/screens/profile_screen.dart';
+import '../../favorites/screens/favorites_screen.dart';
+import '../../challenges/screens/challenges_screen.dart';
 import 'home_screen.dart';
 
 final currentTabProvider = StateProvider<int>((ref) => 0);
@@ -18,9 +20,9 @@ class MainScreen extends ConsumerWidget {
 
     final List<Widget> screens = const [
       HomeScreen(),
-      PlaceHolderTabScreen(title: AppStrings.tabFavorites, icon: Icons.favorite_rounded),
+      FavoritesScreen(),
       CreateListingScreen(),
-      PlaceHolderTabScreen(title: AppStrings.tabChallenges, icon: Icons.emoji_events_rounded),
+      ChallengesScreen(),
       ProfileScreen(),
     ];
 

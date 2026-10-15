@@ -1,0 +1,11 @@
+{
+    "name": "EcoSwap",
+    "short_name": "EcoSwap",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#2E7D32",
+    "theme_color": "#2E7D32",
+    "description": "Hyperlocal sustainable marketplace for swapping pre-loved items.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false
+}

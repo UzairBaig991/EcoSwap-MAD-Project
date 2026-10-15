@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "892620643197",
+    "firebase_url": "https://ecoswap-cf004-default-rtdb.firebaseio.com",
+    "project_id": "ecoswap-cf004",
+    "storage_bucket": "ecoswap-cf004.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:892620643197:android:35de7701e6361e0892ca14",
+        "android_client_info": {
+          "package_name": "com.ecoswap.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "892620643197-5vuhlucohr3oin6hnuof1tvri60jrm9g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ecoswap.app",
+            "certificate_hash": "fbfa3ccc1e20b70f7f72ffa34e5ad88b2dada288"
+          }
+        },
+        {
+          "client_id": "892620643197-2bvofdii5afgcdukmemgvs9tqi5bdhs5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6TsigHDexQW9PjvDHFpRKV4xc3lbVK-Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "892620643197-2bvofdii5afgcdukmemgvs9tqi5bdhs5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "892620643197-9go1j5723pm22k81alfhl6f9539nd2ks.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ecoswap.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

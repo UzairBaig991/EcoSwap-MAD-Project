@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../data/models/listing_model.dart';
+import '../../favorites/providers/favorites_provider.dart';
 import '../providers/home_provider.dart';
 import '../widgets/listing_card.dart';
 
@@ -136,13 +138,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: ListingCard(
-            listing: listing,
-            userLat: ref.read(homeFilterProvider).userLat,
-            userLng: ref.read(homeFilterProvider).userLng,
-          ),
+        return Consumer(
+          builder: (context, ref, child) {
+            final favoriteIds = ref.watch(favoritesControllerProvider);
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: ListingCard(
+                listing: listing,
+                userLat: ref.read(homeFilterProvider).userLat,
+                userLng: ref.read(homeFilterProvider).userLng,
+                isFavorited: favoriteIds.contains(listing.id),
+                onFavoriteToggle: () {
+                  ref.read(favoritesControllerProvider.notifier).toggleFavorite(listing);
+                },
+              ),
+            );
+          },
         );
       },
     );
@@ -178,6 +189,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final filter = ref.watch(homeFilterProvider);
     final filterNotifier = ref.read(homeFilterProvider.notifier);
     final listingsAsync = ref.watch(nearbyListingsStreamProvider);
+    final favoriteIds = ref.watch(favoritesControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -357,6 +369,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         listing: item,
                         userLat: filter.userLat,
                         userLng: filter.userLng,
+                        isFavorited: favoriteIds.contains(item.id),
+                        onFavoriteToggle: () {
+                          ref.read(favoritesControllerProvider.notifier).toggleFavorite(item);
+                        },
                       );
                     },
                   ),

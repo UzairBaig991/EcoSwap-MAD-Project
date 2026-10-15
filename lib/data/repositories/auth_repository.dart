@@ -11,6 +11,8 @@ abstract class AuthRepository {
     required String displayName,
   });
   Future<UserModel> signInWithGoogle();
+  Future<UserModel> signInWithFacebook();
+  Future<UserModel> signInAnonymously();
   Future<void> sendPasswordResetEmail(String email);
   Future<void> signOut();
   Future<UserModel?> getCurrentUserModel();

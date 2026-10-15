@@ -57,7 +57,7 @@ class AppTheme {
         ),
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.cardLight,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -155,14 +155,14 @@ class AppTheme {
         elevation: 3,
         height: 68,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        iconTheme: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: AppColors.primaryDark);
           }
           return const IconThemeData(color: AppColors.textSecondaryLight);
         }),
-        labelTextStyle: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return textTheme.labelSmall?.copyWith(
               color: AppColors.primaryDark,
               fontWeight: FontWeight.bold,
@@ -234,7 +234,7 @@ class AppTheme {
         ),
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.cardDark,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -310,14 +310,14 @@ class AppTheme {
         elevation: 3,
         height: 68,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        iconTheme: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: Colors.white);
           }
           return const IconThemeData(color: AppColors.textSecondaryDark);
         }),
-        labelTextStyle: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return textTheme.labelSmall?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,

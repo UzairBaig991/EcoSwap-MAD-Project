@@ -232,8 +232,8 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
                               onTap: () => _removeImage(index),
                               child: Container(
                                 padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: Colors.black70,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.70),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(Icons.close_rounded, color: Colors.white, size: 16),

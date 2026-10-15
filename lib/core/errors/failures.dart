@@ -19,7 +19,8 @@ class AuthFailure extends Failure {
 }
 
 class NetworkFailure extends Failure {
-  const NetworkFailure([super.message = 'No internet connection', super.code]);
+  const NetworkFailure([String message = 'No internet connection', String? code])
+      : super(message, code: code);
 }
 
 class LocationFailure extends Failure {

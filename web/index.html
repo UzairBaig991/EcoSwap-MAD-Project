@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="EcoSwap - A hyperlocal sustainable marketplace mobile app.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="EcoSwap">
+
+  <!-- Google Sign-In Web Client ID -->
+  <meta name="google-signin-client_id" content="892620643197-2bvofdii5afgcdukmemgvs9tqi5bdhs5.apps.googleusercontent.com">
+
+  <title>EcoSwap</title>
+</head>
+<body>
+  <script>
+    window.addEventListener('load', function(ev) {
+      // Force HTML 2D renderer to bypass WebGL Skia CanvasKit shader logs
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine({
+            renderer: "html"
+          }).then(function(appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
+  <script src="flutter.js" defer></script>
+</body>
+</html>

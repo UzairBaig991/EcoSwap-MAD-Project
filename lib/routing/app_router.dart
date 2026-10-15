@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/constants/app_colors.dart';
+import '../core/constants/app_constants.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login_screen.dart';
@@ -14,18 +17,93 @@ import '../features/profile/screens/carbon_dashboard_screen.dart';
 import '../features/listing/screens/create_listing_screen.dart';
 import '../features/listing/screens/edit_listing_screen.dart';
 import '../features/listing/screens/listing_detail_screen.dart';
+import '../features/favorites/screens/favorites_screen.dart';
+import '../features/challenges/screens/challenges_screen.dart';
 import '../features/chat/screens/chat_list_screen.dart';
 import '../features/chat/screens/chat_screen.dart';
 import '../features/home/screens/main_screen.dart';
 
-class SplashScreen extends ConsumerWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends ConsumerState<SplashScreen> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Safety auto-navigation fallback after 2 seconds
+    _timer = Timer(const Duration(milliseconds: 1800), () {
+      if (mounted) {
+        final onboardingCompleted = ref.read(onboardingCompletedProvider);
+        final isAuthenticated = ref.read(authStateProvider).value != null;
+
+        if (!onboardingCompleted) {
+          context.go('/onboarding');
+        } else if (isAuthenticated) {
+          context.go('/home');
+        } else {
+          context.go('/login');
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  color: AppColors.primaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.swap_horizontal_circle_rounded,
+                  size: 72,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                AppConstants.appName,
+                style: theme.textTheme.displayMedium?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                AppConstants.appTagline,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 48),
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -49,13 +127,12 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
-      final isLoading = authState.isLoading;
       final isAuthenticated = authState.value != null;
       final location = state.matchedLocation;
 
-      // While loading initial auth state, remain on splash
-      if (isLoading) {
-        return location == '/splash' ? null : '/splash';
+      // Allow splash to render initially
+      if (location == '/splash') {
+        return null;
       }
 
       // 1. If onboarding not completed -> redirect to /onboarding
@@ -108,7 +185,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/favorites',
-        builder: (context, state) => const PlaceHolderScreen(title: 'Favorites'),
+        builder: (context, state) => const FavoritesScreen(),
       ),
       GoRoute(
         path: '/create-listing',
@@ -123,7 +200,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/challenges',
-        builder: (context, state) => const PlaceHolderScreen(title: 'Challenges'),
+        builder: (context, state) => const ChallengesScreen(),
       ),
       GoRoute(
         path: '/profile',

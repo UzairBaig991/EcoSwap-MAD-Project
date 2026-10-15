@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/auth_repository_impl.dart';
 import '../../../data/models/user_model.dart';
+import '../../../core/errors/exceptions.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl();
@@ -58,6 +59,17 @@ class AuthController extends StateNotifier<AuthState> {
 
   AuthController(this._repository, this._ref) : super(const AuthState());
 
+  String _formatErrorMessage(dynamic error) {
+    if (error is AuthException) {
+      return error.message.isNotEmpty ? error.message : 'Authentication error occurred.';
+    }
+    if (error is FirebaseAuthException) {
+      return error.message ?? error.code;
+    }
+    final s = error.toString().replaceAll('Exception: ', '');
+    return s.isNotEmpty ? s : 'Sign in error occurred. Please try Email Sign In or Guest mode.';
+  }
+
   Future<bool> signInWithEmailAndPassword(String email, String password) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     try {
@@ -68,7 +80,7 @@ class AuthController extends StateNotifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: e.toString().replaceAll('Exception: ', ''),
+        errorMessage: _formatErrorMessage(e),
       );
       return false;
     }
@@ -92,7 +104,7 @@ class AuthController extends StateNotifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: e.toString().replaceAll('Exception: ', ''),
+        errorMessage: _formatErrorMessage(e),
       );
       return false;
     }
@@ -108,7 +120,39 @@ class AuthController extends StateNotifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: e.toString().replaceAll('Exception: ', ''),
+        errorMessage: _formatErrorMessage(e),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> signInWithFacebook() async {
+    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+    try {
+      final user = await _repository.signInWithFacebook();
+      state = state.copyWith(status: AuthStatus.success, userModel: user);
+      _ref.invalidate(currentUserModelProvider);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: _formatErrorMessage(e),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> signInAnonymously() async {
+    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+    try {
+      final user = await _repository.signInAnonymously();
+      state = state.copyWith(status: AuthStatus.success, userModel: user);
+      _ref.invalidate(currentUserModelProvider);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: _formatErrorMessage(e),
       );
       return false;
     }
@@ -123,7 +167,7 @@ class AuthController extends StateNotifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: e.toString().replaceAll('Exception: ', ''),
+        errorMessage: _formatErrorMessage(e),
       );
       return false;
     }
@@ -138,7 +182,7 @@ class AuthController extends StateNotifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: e.toString(),
+        errorMessage: _formatErrorMessage(e),
       );
     }
   }

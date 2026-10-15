@@ -16,20 +16,11 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   User? get currentUser => _remoteDataSource.currentUser;
 
-  @override
-  Future<UserModel?> signInWithEmailAndPassword(String email, String password) async {
-    final credential = await _remoteDataSource.signInWithEmailAndPassword(email, password);
-    final user = credential.user;
-    if (user == null) return null;
-
-    final profile = await _remoteDataSource.getUserProfile(user.uid);
-    if (profile != null) return profile;
-
-    // Create default profile if missing
-    final newProfile = UserModel(
+  UserModel _createDefaultUserModel(User user, {String? defaultName}) {
+    return UserModel(
       uid: user.uid,
-      email: user.email ?? email,
-      displayName: user.displayName ?? 'EcoSwapper',
+      email: user.email ?? 'guest@ecoswap.app',
+      displayName: user.displayName ?? defaultName ?? (user.isAnonymous ? 'Guest Swapper' : 'EcoSwapper'),
       photoUrl: user.photoURL,
       location: const UserLocation(
         lat: AppConstants.defaultLatitude,
@@ -40,6 +31,18 @@ class AuthRepositoryImpl implements AuthRepository {
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
+  }
+
+  @override
+  Future<UserModel?> signInWithEmailAndPassword(String email, String password) async {
+    final credential = await _remoteDataSource.signInWithEmailAndPassword(email, password);
+    final user = credential.user;
+    if (user == null) return null;
+
+    final profile = await _remoteDataSource.getUserProfile(user.uid);
+    if (profile != null) return profile;
+
+    final newProfile = _createDefaultUserModel(user, defaultName: email.split('@').first);
     await _remoteDataSource.createUserProfile(newProfile);
     return newProfile;
   }
@@ -55,21 +58,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     await user.updateDisplayName(displayName);
 
-    final newProfile = UserModel(
-      uid: user.uid,
-      email: email,
-      displayName: displayName,
-      photoUrl: null,
-      location: const UserLocation(
-        lat: AppConstants.defaultLatitude,
-        lng: AppConstants.defaultLongitude,
-        city: 'San Francisco',
-        geohash: '9q8yy',
-      ),
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
-
+    final newProfile = _createDefaultUserModel(user, defaultName: displayName);
     await _remoteDataSource.createUserProfile(newProfile);
     return newProfile;
   }
@@ -82,21 +71,30 @@ class AuthRepositoryImpl implements AuthRepository {
     final existingProfile = await _remoteDataSource.getUserProfile(user.uid);
     if (existingProfile != null) return existingProfile;
 
-    final newProfile = UserModel(
-      uid: user.uid,
-      email: user.email ?? '',
-      displayName: user.displayName ?? 'EcoSwapper',
-      photoUrl: user.photoURL,
-      location: const UserLocation(
-        lat: AppConstants.defaultLatitude,
-        lng: AppConstants.defaultLongitude,
-        city: 'San Francisco',
-        geohash: '9q8yy',
-      ),
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
+    final newProfile = _createDefaultUserModel(user);
+    await _remoteDataSource.createUserProfile(newProfile);
+    return newProfile;
+  }
 
+  @override
+  Future<UserModel> signInWithFacebook() async {
+    final credential = await _remoteDataSource.signInWithFacebook();
+    final user = credential.user!;
+
+    final existingProfile = await _remoteDataSource.getUserProfile(user.uid);
+    if (existingProfile != null) return existingProfile;
+
+    final newProfile = _createDefaultUserModel(user);
+    await _remoteDataSource.createUserProfile(newProfile);
+    return newProfile;
+  }
+
+  @override
+  Future<UserModel> signInAnonymously() async {
+    final credential = await _remoteDataSource.signInAnonymously();
+    final user = credential.user!;
+
+    final newProfile = _createDefaultUserModel(user, defaultName: 'Guest Swapper');
     await _remoteDataSource.createUserProfile(newProfile);
     return newProfile;
   }
@@ -115,7 +113,8 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<UserModel?> getCurrentUserModel() async {
     final user = currentUser;
     if (user == null) return null;
-    return await _remoteDataSource.getUserProfile(user.uid);
+    final profile = await _remoteDataSource.getUserProfile(user.uid);
+    return profile ?? _createDefaultUserModel(user);
   }
 
   @override

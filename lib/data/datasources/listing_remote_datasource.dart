@@ -50,8 +50,8 @@ class ListingRemoteDataSourceImpl implements ListingRemoteDataSource {
         file.absolute.path,
         outPath,
         quality: 70,
-        maxWidth: 1024,
-        maxHeight: 1024,
+        minWidth: 1024,
+        minHeight: 1024,
       );
 
       if (compressedXFile != null) {
