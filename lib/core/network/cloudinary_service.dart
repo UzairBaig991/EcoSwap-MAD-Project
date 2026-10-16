@@ -1,13 +1,14 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
 class CloudinaryService {
   CloudinaryService._();
 
-  // Free Cloudinary Unsigned Upload Preset (Default fallback endpoint)
-  static const String defaultCloudName = 'ecoswap-app';
-  static const String defaultUploadPreset = 'ecoswap_preset';
+  // Free Cloudinary Unsigned Upload Endpoint
+  static const String defaultCloudName = 'demo';
+  static const String defaultUploadPreset = 'unsigned_preset';
 
   static Future<String?> uploadImage(
     File imageFile, {
@@ -24,7 +25,7 @@ class CloudinaryService {
         ..fields['upload_preset'] = activePreset
         ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
 
-      final response = await request.send();
+      final response = await request.send().timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final responseData = await response.stream.toBytes();
@@ -32,7 +33,8 @@ class CloudinaryService {
         return jsonMap['secure_url'] as String?;
       }
       return null;
-    } catch (_) {
+    } catch (e) {
+      debugPrint("Cloudinary upload info: $e");
       return null;
     }
   }

@@ -22,6 +22,14 @@ abstract class ChatRepository {
     required String senderName,
     required String text,
     required String recipientId,
+    bool isOffer,
+    String? offerItemTitle,
+    String? offerItemImage,
+  });
+  Future<void> respondToOffer({
+    required String chatId,
+    required String messageId,
+    required String newStatus,
   });
   Future<void> markAsRead(String chatId, String userId);
 }

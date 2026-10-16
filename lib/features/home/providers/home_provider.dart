@@ -5,6 +5,8 @@ import '../../../core/constants/app_constants.dart';
 import '../../../data/models/listing_model.dart';
 import '../../listing/providers/listing_provider.dart';
 
+enum ListingSortOption { nearestFirst, highestCo2, priceLowToHigh, recentlyAdded }
+
 class HomeFilterState {
   final String searchQuery;
   final String selectedCategory;
@@ -14,6 +16,7 @@ class HomeFilterState {
   final double userLat;
   final double userLng;
   final bool isMapView;
+  final ListingSortOption sortBy;
 
   const HomeFilterState({
     this.searchQuery = '',
@@ -24,6 +27,7 @@ class HomeFilterState {
     this.userLat = AppConstants.defaultLatitude,
     this.userLng = AppConstants.defaultLongitude,
     this.isMapView = false,
+    this.sortBy = ListingSortOption.nearestFirst,
   });
 
   HomeFilterState copyWith({
@@ -35,6 +39,7 @@ class HomeFilterState {
     double? userLat,
     double? userLng,
     bool? isMapView,
+    ListingSortOption? sortBy,
   }) {
     return HomeFilterState(
       searchQuery: searchQuery ?? this.searchQuery,
@@ -45,6 +50,7 @@ class HomeFilterState {
       userLat: userLat ?? this.userLat,
       userLng: userLng ?? this.userLng,
       isMapView: isMapView ?? this.isMapView,
+      sortBy: sortBy ?? this.sortBy,
     );
   }
 }
@@ -70,6 +76,10 @@ class HomeFilterNotifier extends StateNotifier<HomeFilterState> {
 
   void setRadius(double radiusKm) {
     state = state.copyWith(radiusKm: radiusKm);
+  }
+
+  void setSortBy(ListingSortOption option) {
+    state = state.copyWith(sortBy: option);
   }
 
   void setUserLocation(double lat, double lng) {
@@ -119,18 +129,34 @@ final nearbyListingsStreamProvider = StreamProvider<List<ListingModel>>((ref) {
     searchQuery: filter.searchQuery,
   )
       .map((listings) {
-    // Distance filtering and sorting
-    return listings.where((item) {
+    // 1. Distance filter
+    final filtered = listings.where((item) {
       final dist = calculateDistanceKm(
           filter.userLat, filter.userLng, item.location.lat, item.location.lng);
       return dist <= filter.radiusKm;
-    }).toList()
-      ..sort((a, b) {
-        final distA = calculateDistanceKm(
-            filter.userLat, filter.userLng, a.location.lat, a.location.lng);
-        final distB = calculateDistanceKm(
-            filter.userLat, filter.userLng, b.location.lat, b.location.lng);
-        return distA.compareTo(distB);
-      });
+    }).toList();
+
+    // 2. Advanced Sorting
+    filtered.sort((a, b) {
+      switch (filter.sortBy) {
+        case ListingSortOption.highestCo2:
+          return b.carbonSavedEstimate.compareTo(a.carbonSavedEstimate);
+        case ListingSortOption.priceLowToHigh:
+          final priceA = a.price ?? 0.0;
+          final priceB = b.price ?? 0.0;
+          return priceA.compareTo(priceB);
+        case ListingSortOption.recentlyAdded:
+          return b.createdAt.compareTo(a.createdAt);
+        case ListingSortOption.nearestFirst:
+        default:
+          final distA = calculateDistanceKm(
+              filter.userLat, filter.userLng, a.location.lat, a.location.lng);
+          final distB = calculateDistanceKm(
+              filter.userLat, filter.userLng, b.location.lat, b.location.lng);
+          return distA.compareTo(distB);
+      }
+    });
+
+    return filtered;
   });
 });

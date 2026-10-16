@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -373,7 +374,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     ),
                     const SizedBox(height: 28),
 
-                    // Location Map Preview
+                    // Location Preview Card
                     Text(
                       'Item Location',
                       style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -395,25 +396,40 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     const SizedBox(height: 12),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: SizedBox(
-                        height: 180,
-                        child: GoogleMap(
-                          initialCameraPosition: CameraPosition(
-                            target: LatLng(item.location.lat, item.location.lng),
-                            zoom: 14,
-                          ),
-                          markers: {
-                            Marker(
-                              markerId: MarkerId(item.id),
-                              position: LatLng(item.location.lat, item.location.lng),
-                              infoWindow: InfoWindow(title: item.title),
-                            ),
-                          },
-                          zoomControlsEnabled: false,
-                          scrollGesturesEnabled: false,
-                          rotateGesturesEnabled: false,
-                          tiltGesturesEnabled: false,
-                        ),
+                      child: Container(
+                        height: kIsWeb ? 100 : 180,
+                        color: AppColors.primaryContainer.withOpacity(0.5),
+                        child: kIsWeb
+                            ? Center(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.pin_drop_rounded, color: AppColors.primary, size: 28),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Item Location: ${item.location.address}',
+                                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryDark),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : GoogleMap(
+                                initialCameraPosition: CameraPosition(
+                                  target: LatLng(item.location.lat, item.location.lng),
+                                  zoom: 14,
+                                ),
+                                markers: {
+                                  Marker(
+                                    markerId: MarkerId(item.id),
+                                    position: LatLng(item.location.lat, item.location.lng),
+                                    infoWindow: InfoWindow(title: item.title),
+                                  ),
+                                },
+                                zoomControlsEnabled: false,
+                                scrollGesturesEnabled: false,
+                                rotateGesturesEnabled: false,
+                                tiltGesturesEnabled: false,
+                              ),
                       ),
                     ),
                     const SizedBox(height: 32),

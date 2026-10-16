@@ -1,8 +1,9 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import '../models/user_model.dart';
 import '../models/listing_model.dart';
+import '../../core/network/cloudinary_service.dart';
 import '../../core/errors/exceptions.dart';
 
 abstract class ProfileRemoteDataSource {
@@ -13,13 +14,10 @@ abstract class ProfileRemoteDataSource {
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
 
   ProfileRemoteDataSourceImpl({
     FirebaseFirestore? firestore,
-    FirebaseStorage? storage,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _storage = storage ?? FirebaseStorage.instance;
+  }) : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Future<void> updateUserProfile(UserModel userModel) async {
@@ -36,11 +34,18 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<String> uploadProfileImage(String userId, File imageFile) async {
     try {
-      final ref = _storage.ref().child('profile_photos/$userId/profile_${DateTime.now().millisecondsSinceEpoch}.jpg');
-      final uploadTask = await ref.putFile(imageFile);
-      return await uploadTask.ref.getDownloadURL();
+      // 1. Try Free Cloudinary Upload
+      final cloudinaryUrl = await CloudinaryService.uploadImage(imageFile);
+      if (cloudinaryUrl != null && cloudinaryUrl.isNotEmpty) {
+        return cloudinaryUrl;
+      }
+
+      // 2. Fallback: Base64 Data URI string
+      final bytes = await imageFile.readAsBytes();
+      final base64String = base64Encode(bytes);
+      return 'data:image/jpeg;base64,$base64String';
     } catch (e) {
-      throw StorageException('Failed to upload profile photo: ${e.toString()}');
+      throw StorageException('Failed to process profile photo: ${e.toString()}');
     }
   }
 

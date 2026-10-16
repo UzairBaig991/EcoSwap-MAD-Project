@@ -1,8 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
@@ -53,7 +53,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Filter Listings',
+                        'Advanced Filters & Sorting',
                         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       TextButton(
@@ -68,6 +68,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const Divider(),
                   const SizedBox(height: 12),
+
+                  // Sort By Selection
+                  const Text('Sort By', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<ListingSortOption>(
+                    value: filter.sortBy,
+                    decoration: const InputDecoration(prefixIcon: Icon(Icons.sort_rounded)),
+                    items: const [
+                      DropdownMenuItem(
+                        value: ListingSortOption.nearestFirst,
+                        child: Text('Nearest First 📍'),
+                      ),
+                      DropdownMenuItem(
+                        value: ListingSortOption.highestCo2,
+                        child: Text('Highest CO₂ Saved 🌿'),
+                      ),
+                      DropdownMenuItem(
+                        value: ListingSortOption.recentlyAdded,
+                        child: Text('Recently Added ⏱️'),
+                      ),
+                      DropdownMenuItem(
+                        value: ListingSortOption.priceLowToHigh,
+                        child: Text('Price: Low to High 💵'),
+                      ),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) notifier.setSortBy(val);
+                    },
+                  ),
+                  const SizedBox(height: 20),
 
                   // Radius Filter
                   Text(
@@ -198,9 +228,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.primaryContainer,
-                borderRadius: BorderRadius.circular(8),
+                shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.swap_horizontal_circle_rounded,
@@ -219,14 +249,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
         actions: [
-          // Filter Button
           IconButton(
             icon: const Icon(Icons.tune_rounded),
-            tooltip: 'Filter',
+            tooltip: 'Filter & Sort',
             onPressed: _showFilterModal,
           ),
-
-          // Map/List View Toggle
           IconButton(
             icon: Icon(
               filter.isMapView ? Icons.view_list_rounded : Icons.map_rounded,
@@ -239,13 +266,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       body: Column(
         children: [
+          // Community Impact Live Banner
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: const BoxDecoration(
+              gradient: AppColors.ecoGradient,
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.eco_rounded, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'Community Impact: 1,420 kg CO₂ saved together this month! 🎉',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${filter.radiusKm.round()} km radius',
+                  style: const TextStyle(color: Colors.white70, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+
           // Search & Category Header
           Container(
             color: theme.scaffoldBackgroundColor,
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
             child: Column(
               children: [
-                // Search Bar Field
                 TextField(
                   controller: _searchController,
                   onChanged: (value) => filterNotifier.setSearchQuery(value),
@@ -300,7 +354,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: listingsAsync.when(
               data: (listings) {
                 if (filter.isMapView) {
-                  // MAP VIEW
+                  if (kIsWeb) {
+                    // Web Safe Nearby Proximity View
+                    return Container(
+                      color: theme.colorScheme.surfaceVariant,
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.map_rounded, color: AppColors.primary, size: 24),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Nearby Swaps (${listings.length} items within ${filter.radiusKm.round()} km)',
+                                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Native interactive Google Maps run on Android & iOS mobile devices.\nShowing proximity-sorted listings below:',
+                            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                          ),
+                          const SizedBox(height: 12),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: listings.length,
+                              itemBuilder: (context, idx) => ListingCard(
+                                listing: listings[idx],
+                                userLat: filter.userLat,
+                                userLng: filter.userLng,
+                                isFavorited: favoriteIds.contains(listings[idx].id),
+                                onFavoriteToggle: () {
+                                  ref.read(favoritesControllerProvider.notifier).toggleFavorite(listings[idx]);
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  // Native Android & iOS Google Map
                   return GoogleMap(
                     initialCameraPosition: CameraPosition(
                       target: LatLng(filter.userLat, filter.userLng),
@@ -314,7 +411,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   );
                 }
 
-                // LIST VIEW
                 if (listings.isEmpty) {
                   return Center(
                     child: Padding(

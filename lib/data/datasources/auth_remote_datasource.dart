@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
+import '../../core/network/notification_service.dart';
 import '../../core/errors/exceptions.dart';
 
 abstract class AuthRemoteDataSource {
@@ -46,10 +47,23 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   User? get currentUser => _firebaseAuth.currentUser;
 
+  Future<void> _notifyWelcome(String providerName) async {
+    try {
+      if (!kIsWeb) {
+        await NotificationService.instance.showLocalNotification(
+          title: 'Welcome to EcoSwap! 🌱',
+          body: 'You have successfully signed in with $providerName. Start swapping sustainably today!',
+        );
+      }
+    } catch (_) {}
+  }
+
   @override
   Future<UserCredential> signInWithEmailAndPassword(String email, String password) async {
     try {
-      return await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+      final cred = await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+      await _notifyWelcome('Email');
+      return cred;
     } on FirebaseAuthException catch (e) {
       throw AuthException(e.message ?? 'Authentication failed. Please check your credentials.', code: e.code);
     } catch (e) {
@@ -60,7 +74,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserCredential> signUpWithEmailAndPassword(String email, String password) async {
     try {
-      return await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+      final cred = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+      await _notifyWelcome('Email Registration');
+      return cred;
     } on FirebaseAuthException catch (e) {
       throw AuthException(e.message ?? 'Registration failed.', code: e.code);
     } catch (e) {
@@ -71,13 +87,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserCredential> signInWithGoogle() async {
     try {
+      UserCredential cred;
       if (kIsWeb) {
         final GoogleAuthProvider googleProvider = GoogleAuthProvider();
         googleProvider.addScope('email');
         googleProvider.addScope('profile');
-        return await _firebaseAuth.signInWithPopup(googleProvider);
+        googleProvider.setCustomParameters({'prompt': 'select_account'});
+        cred = await _firebaseAuth.signInWithPopup(googleProvider);
       } else {
-        // Native Google Sign-In for Android & iOS
         await _googleSignIn.signOut();
 
         final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -91,43 +108,64 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           idToken: googleAuth.idToken,
         );
 
-        return await _firebaseAuth.signInWithCredential(credential);
+        cred = await _firebaseAuth.signInWithCredential(credential);
       }
+
+      await _notifyWelcome('Google Account');
+      return cred;
     } on FirebaseAuthException catch (e) {
       final code = e.code;
       final msg = e.message;
       if (code == 'popup-closed-by-user' || code == 'cancelled') {
         throw const AuthException('Google Sign-In popup was closed.');
       }
-      if (code == 'unauthorized-domain') {
-        throw const AuthException('localhost domain is not authorized in Firebase Auth Settings.');
-      }
       throw AuthException(msg != null && msg.isNotEmpty ? msg : 'Google Sign-In failed ($code).', code: code);
     } catch (e) {
       final errText = e.toString().toLowerCase();
       if (errText.contains('popup_closed') || errText.contains('canceled') || errText.contains('cancelled')) {
-        throw const AuthException('Google Sign-In popup was closed.');
+        throw const AuthException('Google Sign-In was cancelled.');
       }
-      throw AuthException('Google Sign-In error: ${e.toString()}');
+      throw AuthException('Google sign-in error: ${e.toString().replaceAll('Assertion failed:', '').replaceAll('PlatformException(', '').replaceAll(')', '')}');
     }
   }
 
   @override
   Future<UserCredential> signInWithFacebook() async {
     try {
+      UserCredential cred;
       final facebookProvider = FacebookAuthProvider();
-      return await _firebaseAuth.signInWithProvider(facebookProvider);
+      facebookProvider.addScope('email');
+      facebookProvider.addScope('public_profile');
+
+      if (kIsWeb) {
+        cred = await _firebaseAuth.signInWithPopup(facebookProvider);
+      } else {
+        cred = await _firebaseAuth.signInWithProvider(facebookProvider);
+      }
+
+      await _notifyWelcome('Facebook Account');
+      return cred;
     } on FirebaseAuthException catch (e) {
-      throw AuthException(e.message ?? 'Facebook Sign-In failed.', code: e.code);
+      final code = e.code;
+      final msg = e.message;
+      if (code == 'popup-closed-by-user' || code == 'cancelled') {
+        throw const AuthException('Facebook Sign-In popup was closed.');
+      }
+      if (code == 'operation-not-allowed' || (msg != null && msg.contains('disabled'))) {
+        throw const AuthException('Facebook Sign-In is currently disabled in your Firebase Console. You can sign in instantly with Google or Email!');
+      }
+      throw AuthException(msg != null && msg.isNotEmpty ? msg : 'Facebook Sign-In failed ($code).', code: code);
     } catch (e) {
-      throw const AuthException('Facebook sign-in requires Facebook App ID configuration in Firebase Console. You can sign in with Email!');
+      throw const AuthException('Facebook Sign-In is disabled in Firebase Console. Please sign in with Google or Email!');
     }
   }
 
   @override
   Future<UserCredential> signInAnonymously() async {
     try {
-      return await _firebaseAuth.signInAnonymously();
+      final cred = await _firebaseAuth.signInAnonymously();
+      await _notifyWelcome('Guest Explorer');
+      return cred;
     } catch (e) {
       throw const AuthException('Guest sign in failed. Please use Email Sign In.');
     }

@@ -21,6 +21,25 @@ class AppColors {
   static const Color tertiary = Color(0xFFF57C00); // Warm Amber/Orange
   static const Color tertiaryContainer = Color(0xFFFFF3E0);
 
+  // Eco Gradients
+  static const LinearGradient ecoGradient = LinearGradient(
+    colors: [Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF4CAF50)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient impactGradient = LinearGradient(
+    colors: [Color(0xFF005B4F), Color(0xFF00897B), Color(0xFF4DB6AC)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient amberGradient = LinearGradient(
+    colors: [Color(0xFFE65100), Color(0xFFF57C00), Color(0xFFFFB74D)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
   // Background & Surface (Light)
   static const Color backgroundLight = Color(0xFFF8FAF8);
   static const Color surfaceLight = Color(0xFFFFFFFF);

@@ -51,6 +51,9 @@ class ChatRepositoryImpl implements ChatRepository {
     required String senderName,
     required String text,
     required String recipientId,
+    bool isOffer = false,
+    String? offerItemTitle,
+    String? offerItemImage,
   }) async {
     await _remoteDataSource.sendMessage(
       chatId: chatId,
@@ -58,6 +61,22 @@ class ChatRepositoryImpl implements ChatRepository {
       senderName: senderName,
       text: text,
       recipientId: recipientId,
+      isOffer: isOffer,
+      offerItemTitle: offerItemTitle,
+      offerItemImage: offerItemImage,
+    );
+  }
+
+  @override
+  Future<void> respondToOffer({
+    required String chatId,
+    required String messageId,
+    required String newStatus,
+  }) async {
+    await _remoteDataSource.respondToOffer(
+      chatId: chatId,
+      messageId: messageId,
+      newStatus: newStatus,
     );
   }
 

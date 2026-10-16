@@ -99,6 +99,9 @@ class ChatController extends StateNotifier<ChatOperationState> {
     required String chatId,
     required String text,
     required String recipientId,
+    bool isOffer = false,
+    String? offerItemTitle,
+    String? offerItemImage,
   }) async {
     try {
       final currentUser = await _ref.read(currentUserModelProvider.future);
@@ -110,6 +113,26 @@ class ChatController extends StateNotifier<ChatOperationState> {
         senderName: currentUser.displayName,
         text: text,
         recipientId: recipientId,
+        isOffer: isOffer,
+        offerItemTitle: offerItemTitle,
+        offerItemImage: offerItemImage,
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> respondToOffer({
+    required String chatId,
+    required String messageId,
+    required String newStatus,
+  }) async {
+    try {
+      await _repository.respondToOffer(
+        chatId: chatId,
+        messageId: messageId,
+        newStatus: newStatus,
       );
       return true;
     } catch (e) {

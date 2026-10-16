@@ -24,6 +24,14 @@ abstract class ChatRemoteDataSource {
     required String senderName,
     required String text,
     required String recipientId,
+    bool isOffer,
+    String? offerItemTitle,
+    String? offerItemImage,
+  });
+  Future<void> respondToOffer({
+    required String chatId,
+    required String messageId,
+    required String newStatus, // Accepted, Declined
   });
   Future<void> markAsRead(String chatId, String userId);
 }
@@ -119,6 +127,9 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     required String senderName,
     required String text,
     required String recipientId,
+    bool isOffer = false,
+    String? offerItemTitle,
+    String? offerItemImage,
   }) async {
     try {
       final messageRef = _firestore.collection('chats').doc(chatId).collection('messages').doc();
@@ -131,19 +142,57 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         text: text,
         createdAt: DateTime.now(),
         readBy: [senderId],
+        isOffer: isOffer,
+        offerItemTitle: offerItemTitle,
+        offerItemImage: offerItemImage,
+        offerStatus: isOffer ? 'Pending' : null,
       );
 
       await messageRef.set(message.toFirestore());
 
       // Update Chat last message & increment unread counter
+      final lastMsgText = isOffer ? '🔄 Offered swap: "$offerItemTitle"' : text;
       await _firestore.collection('chats').doc(chatId).update({
-        'lastMessage': text,
+        'lastMessage': lastMsgText,
         'lastMessageSenderId': senderId,
         'lastMessageAt': Timestamp.now(),
         'unreadCount.$recipientId': FieldValue.increment(1),
       });
     } catch (e) {
       throw ServerException('Failed to send message: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> respondToOffer({
+    required String chatId,
+    required String messageId,
+    required String newStatus,
+  }) async {
+    try {
+      await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .doc(messageId)
+          .update({
+        'offerStatus': newStatus,
+      });
+
+      if (newStatus == 'Accepted') {
+        final chatDoc = await _firestore.collection('chats').doc(chatId).get();
+        if (chatDoc.exists) {
+          final listingId = chatDoc.data()?['listingId'];
+          if (listingId != null) {
+            await _firestore.collection('listings').doc(listingId).update({
+              'status': 'Claimed',
+              'updatedAt': Timestamp.now(),
+            });
+          }
+        }
+      }
+    } catch (e) {
+      throw ServerException('Failed to respond to offer: ${e.toString()}');
     }
   }
 

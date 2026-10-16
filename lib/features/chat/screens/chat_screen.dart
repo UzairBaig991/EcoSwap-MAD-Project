@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../data/models/chat_model.dart';
+import '../../../data/models/message_model.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../profile/providers/profile_provider.dart';
 import '../providers/chat_provider.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -60,7 +62,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _activeChat = foundChat;
       ref.read(chatControllerProvider.notifier).markAsRead(widget.chatId);
     } else if (widget.initialOwnerId != null) {
-      // Extract listingId from chatId if format is listingId_userId1_userId2
       final listingId = widget.chatId.split('_').first;
       final createdChat = await ref.read(chatControllerProvider.notifier).initializeChat(
             listingId: listingId,
@@ -79,16 +80,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent + 100,
+        _scrollController.position.maxScrollExtent + 120,
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOut,
       );
     }
   }
 
-  Future<void> _handleSend() async {
+  Future<void> _handleSend({bool isOffer = false, String? offerTitle, String? offerImage}) async {
     final text = _textController.text.trim();
-    if (text.isEmpty || _activeChat == null) return;
+    if ((text.isEmpty && !isOffer) || _activeChat == null) return;
 
     final currentUser = ref.read(authStateProvider).asData?.value;
     if (currentUser == null) return;
@@ -102,13 +103,177 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     final success = await ref.read(chatControllerProvider.notifier).sendMessage(
           chatId: _activeChat!.id,
-          text: text,
+          text: isOffer ? 'I offered to swap with: "$offerTitle"' : text,
           recipientId: recipientId,
+          isOffer: isOffer,
+          offerItemTitle: offerTitle,
+          offerItemImage: offerImage,
         );
 
     if (success) {
       Timer(const Duration(milliseconds: 100), _scrollToBottom);
     }
+  }
+
+  void _showMakeOfferModal() {
+    final myListings = ref.read(userListingsStreamProvider).asData?.value ?? [];
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Propose a Swap Offer 🔄',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              const Text('Select an item from your listings to offer in exchange:'),
+              const SizedBox(height: 16),
+              if (myListings.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryContainer.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text('You have no active listings. Post an item first to make swap offers!'),
+                )
+              else
+                SizedBox(
+                  height: 180,
+                  child: ListView.builder(
+                    itemCount: myListings.length,
+                    itemBuilder: (context, idx) {
+                      final item = myListings[idx];
+                      return ListTile(
+                        leading: const Icon(Icons.swap_horizontal_circle_rounded, color: AppColors.primary),
+                        title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text('${item.category} • ${item.condition}'),
+                        trailing: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            _handleSend(
+                              isOffer: true,
+                              offerTitle: item.title,
+                              offerImage: item.images.isNotEmpty ? item.images.first : null,
+                            );
+                          },
+                          child: const Text('Offer This Item'),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildOfferBubble(MessageModel msg, bool isMe, ThemeData theme) {
+    final status = msg.offerStatus ?? 'Pending';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width * 0.8,
+      ),
+      decoration: BoxDecoration(
+        color: isMe ? AppColors.primaryContainer : AppColors.secondaryContainer,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: status == 'Accepted'
+              ? AppColors.success
+              : (status == 'Declined' ? AppColors.error : AppColors.primary),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.swap_horizontal_circle_rounded, color: AppColors.primary, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'SWAP OFFER',
+                style: TextStyle(
+                  color: isMe ? AppColors.primaryDark : AppColors.secondaryDark,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: status == 'Accepted'
+                      ? AppColors.success
+                      : (status == 'Declined' ? AppColors.error : AppColors.warning),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  status,
+                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Offered Item: "${msg.offerItemTitle ?? 'Item'}"',
+            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          if (!isMe && status == 'Pending')
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      ref.read(chatControllerProvider.notifier).respondToOffer(
+                            chatId: widget.chatId,
+                            messageId: msg.id,
+                            newStatus: 'Declined',
+                          );
+                    },
+                    child: const Text('Decline'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ref.read(chatControllerProvider.notifier).respondToOffer(
+                            chatId: widget.chatId,
+                            messageId: msg.id,
+                            newStatus: 'Accepted',
+                          );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Offer Accepted! Item status updated to Claimed 🎉'),
+                          backgroundColor: AppColors.success,
+                        ),
+                      );
+                    },
+                    child: const Text('Accept Swap'),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -138,6 +303,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.swap_calls_rounded, color: AppColors.primary),
+            tooltip: 'Make Swap Offer',
+            onPressed: _showMakeOfferModal,
+          ),
           if (_activeChat != null)
             TextButton.icon(
               onPressed: () => context.push('/listing/${_activeChat!.listingId}'),
@@ -169,6 +339,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             ),
                           ),
                         ),
+                        TextButton(
+                          onPressed: _showMakeOfferModal,
+                          child: const Text('+ Propose Swap'),
+                        ),
                       ],
                     ),
                   ),
@@ -180,7 +354,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       if (messages.isEmpty) {
                         return Center(
                           child: Text(
-                            'Say hi! Arrange a convenient time and place to swap.',
+                            'Say hi! Propose an offer or arrange a time to swap.',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
@@ -197,6 +371,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         itemBuilder: (context, index) {
                           final msg = messages[index];
                           final isMe = msg.senderId == currentUser?.uid;
+
+                          if (msg.isOffer) {
+                            return Align(
+                              alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                              child: _buildOfferBubble(msg, isMe, theme),
+                            );
+                          }
 
                           return Align(
                             alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
@@ -266,6 +447,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                     child: Row(
                       children: [
+                        IconButton(
+                          icon: const Icon(Icons.card_giftcard_rounded, color: AppColors.primary),
+                          tooltip: 'Propose Swap Offer',
+                          onPressed: _showMakeOfferModal,
+                        ),
                         Expanded(
                           child: TextField(
                             controller: _textController,
@@ -283,7 +469,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ),
                         const SizedBox(width: 8),
                         IconButton(
-                          onPressed: _handleSend,
+                          onPressed: () => _handleSend(),
                           icon: const Icon(Icons.send_rounded, color: AppColors.primary),
                         ),
                       ],

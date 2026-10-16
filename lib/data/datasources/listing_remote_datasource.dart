@@ -1,13 +1,13 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:dart_geohash/dart_geohash.dart';
 
 import '../models/listing_model.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/carbon_calculator.dart';
+import '../../core/network/cloudinary_service.dart';
 import '../../core/errors/exceptions.dart';
 
 abstract class ListingRemoteDataSource {
@@ -29,14 +29,11 @@ abstract class ListingRemoteDataSource {
 
 class ListingRemoteDataSourceImpl implements ListingRemoteDataSource {
   final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
   final GeoHasher _geoHasher;
 
   ListingRemoteDataSourceImpl({
     FirebaseFirestore? firestore,
-    FirebaseStorage? storage,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _storage = storage ?? FirebaseStorage.instance,
         _geoHasher = GeoHasher();
 
   Future<File> _compressImage(File file) async {
@@ -69,15 +66,13 @@ class ListingRemoteDataSourceImpl implements ListingRemoteDataSource {
     for (int i = 0; i < files.length; i++) {
       final compressedFile = await _compressImage(files[i]);
 
-      try {
-        final ref = _storage
-            .ref()
-            .child('listing_images/$listingId/img_${i}_${DateTime.now().millisecondsSinceEpoch}.jpg');
-        final uploadTask = await ref.putFile(compressedFile);
-        final url = await uploadTask.ref.getDownloadURL();
-        imageUrls.add(url);
-      } catch (e) {
-        // Fallback: Store compressed image as Base64 Data URI if Firebase Storage bucket is offline
+      // 1. Try Free Cloudinary Image Upload
+      final cloudinaryUrl = await CloudinaryService.uploadImage(compressedFile);
+
+      if (cloudinaryUrl != null && cloudinaryUrl.isNotEmpty) {
+        imageUrls.add(cloudinaryUrl);
+      } else {
+        // 2. Fallback: Compressed Base64 Data URI (Free, zero cloud dependencies)
         final bytes = await compressedFile.readAsBytes();
         final base64String = base64Encode(bytes);
         imageUrls.add('data:image/jpeg;base64,$base64String');
@@ -93,13 +88,8 @@ class ListingRemoteDataSourceImpl implements ListingRemoteDataSource {
       final docRef = _firestore.collection('listings').doc();
       final listingId = docRef.id;
 
-      // Calculate geohash
       final geohash = _geoHasher.encode(listing.location.lng, listing.location.lat, precision: 6);
-
-      // Upload or encode images
       final imageUrls = await _uploadImages(listingId, imageFiles);
-
-      // Estimate CO2 saved based on category using CarbonCalculator
       final co2Estimate = CarbonCalculator.estimateCategorySavings(listing.category);
 
       final finalListing = listing.copyWith(
@@ -113,7 +103,7 @@ class ListingRemoteDataSourceImpl implements ListingRemoteDataSource {
 
       await docRef.set(finalListing.toFirestore());
 
-      // Award points to creator (+10 points for listing)
+      // Award +10 points to creator for listing item
       await _firestore.collection('users').doc(listing.ownerId).update({
         'ecoScore': FieldValue.increment(AppConstants.pointsPerListingCreated),
       });
@@ -168,7 +158,6 @@ class ListingRemoteDataSourceImpl implements ListingRemoteDataSource {
   }) async {
     try {
       if (status == 'Completed') {
-        // Run atomic transaction to update listing status and reward CO2 + Points to both parties
         await _firestore.runTransaction((transaction) async {
           final listingRef = _firestore.collection('listings').doc(listingId);
           final listingDoc = await transaction.get(listingRef);
@@ -180,21 +169,18 @@ class ListingRemoteDataSourceImpl implements ListingRemoteDataSource {
           final ownerId = listing.ownerId;
           final finalClaimerId = claimedByUserId ?? listing.claimedByUserId;
 
-          // 1. Update listing status
           transaction.update(listingRef, {
             'status': 'Completed',
             'updatedAt': Timestamp.now(),
             if (finalClaimerId != null) 'claimedByUserId': finalClaimerId,
           });
 
-          // 2. Award CO2 saved + 50 Eco Points to Owner
           final ownerRef = _firestore.collection('users').doc(ownerId);
           transaction.update(ownerRef, {
             'totalCo2Saved': FieldValue.increment(co2Saved),
             'ecoScore': FieldValue.increment(AppConstants.pointsPerListingCompleted),
           });
 
-          // 3. Award CO2 saved + 50 Eco Points to Claimer (if available)
           if (finalClaimerId != null && finalClaimerId.isNotEmpty && finalClaimerId != ownerId) {
             final claimerRef = _firestore.collection('users').doc(finalClaimerId);
             transaction.update(claimerRef, {
@@ -261,7 +247,6 @@ class ListingRemoteDataSourceImpl implements ListingRemoteDataSource {
           .map((doc) => ListingModel.fromFirestore(doc as DocumentSnapshot<Map<String, dynamic>>))
           .toList();
 
-      // Filter by search query if provided
       if (searchQuery != null && searchQuery.isNotEmpty) {
         final q = searchQuery.toLowerCase();
         return listings.where((item) {

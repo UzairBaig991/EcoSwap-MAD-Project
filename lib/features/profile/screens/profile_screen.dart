@@ -38,6 +38,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
     return 'Eco Beginner 🍃';
   }
 
+  Widget _buildBadgeChip(String label, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.4), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -118,6 +144,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                           style: theme.textTheme.bodyMedium,
                         ),
                       ],
+                      const SizedBox(height: 16),
+
+                      // Eco Badges Gallery
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildBadgeChip('Zero Waste ♻️', Icons.recycling_rounded, AppColors.primary),
+                          _buildBadgeChip('Carbon Champion 🏆', Icons.emoji_events_rounded, AppColors.tertiary),
+                          _buildBadgeChip('Local Swapper 🌟', Icons.swap_horizontal_circle_rounded, AppColors.secondary),
+                          _buildBadgeChip('Fast Responder ⚡', Icons.bolt_rounded, AppColors.paidType),
+                        ],
+                      ),
                       const SizedBox(height: 20),
 
                       // Impact Stats Grid
