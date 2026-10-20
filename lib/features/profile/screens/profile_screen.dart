@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/app_image_helper.dart';
 import '../../../main.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
@@ -87,6 +87,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
             return const Center(child: Text('User profile not available'));
           }
 
+          final imageProvider = AppImageHelper.getImageProvider(user.photoUrl);
+
           return NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
               SliverToBoxAdapter(
@@ -98,10 +100,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                       CircleAvatar(
                         radius: 46,
                         backgroundColor: AppColors.primaryContainer,
-                        backgroundImage: (user.photoUrl != null && user.photoUrl!.isNotEmpty)
-                            ? CachedNetworkImageProvider(user.photoUrl!)
-                            : null,
-                        child: (user.photoUrl == null || user.photoUrl!.isEmpty)
+                        backgroundImage: imageProvider,
+                        child: imageProvider == null
                             ? Text(
                                 user.displayName.isNotEmpty
                                     ? user.displayName[0].toUpperCase()
@@ -401,20 +401,11 @@ class MyListingsTab extends ConsumerWidget {
               child: ListTile(
                 leading: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: item.images.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: item.images.first,
-                          width: 56,
-                          height: 56,
-                          fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) => const Icon(Icons.image_not_supported_rounded),
-                        )
-                      : Container(
-                          width: 56,
-                          height: 56,
-                          color: AppColors.primaryContainer,
-                          child: const Icon(Icons.image_rounded, color: AppColors.primary),
-                        ),
+                  child: AppImageHelper.buildImageWidget(
+                    item.images.isNotEmpty ? item.images.first : null,
+                    width: 56,
+                    height: 56,
+                  ),
                 ),
                 title: Text(
                   item.title,

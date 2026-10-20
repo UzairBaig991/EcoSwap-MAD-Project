@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 import '../models/listing_model.dart';
@@ -8,7 +8,7 @@ import '../../core/errors/exceptions.dart';
 
 abstract class ProfileRemoteDataSource {
   Future<void> updateUserProfile(UserModel userModel);
-  Future<String> uploadProfileImage(String userId, File imageFile);
+  Future<String> uploadProfileImageBytes(String userId, Uint8List imageBytes);
   Stream<List<ListingModel>> getUserListings(String userId);
 }
 
@@ -32,20 +32,31 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }
 
   @override
-  Future<String> uploadProfileImage(String userId, File imageFile) async {
+  Future<String> uploadProfileImageBytes(String userId, Uint8List imageBytes) async {
     try {
-      // 1. Try Free Cloudinary Upload
-      final cloudinaryUrl = await CloudinaryService.uploadImage(imageFile);
-      if (cloudinaryUrl != null && cloudinaryUrl.isNotEmpty) {
-        return cloudinaryUrl;
-      }
+      // 1. Upload via CloudinaryService
+      final photoUrl = await CloudinaryService.uploadImageBytes(imageBytes);
 
-      // 2. Fallback: Base64 Data URI string
-      final bytes = await imageFile.readAsBytes();
-      final base64String = base64Encode(bytes);
-      return 'data:image/jpeg;base64,$base64String';
+      final finalUrl = (photoUrl != null && photoUrl.isNotEmpty)
+          ? photoUrl
+          : 'data:image/jpeg;base64,${base64Encode(imageBytes)}';
+
+      // 2. Save directly to Firestore user document
+      await _firestore.collection('users').doc(userId).update({
+        'photoUrl': finalUrl,
+        'updatedAt': Timestamp.now(),
+      });
+
+      return finalUrl;
     } catch (e) {
-      throw StorageException('Failed to process profile photo: ${e.toString()}');
+      final fallbackUrl = 'data:image/jpeg;base64,${base64Encode(imageBytes)}';
+      try {
+        await _firestore.collection('users').doc(userId).update({
+          'photoUrl': fallbackUrl,
+          'updatedAt': Timestamp.now(),
+        });
+      } catch (_) {}
+      return fallbackUrl;
     }
   }
 

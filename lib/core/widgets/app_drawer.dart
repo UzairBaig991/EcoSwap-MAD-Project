@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 import '../constants/app_colors.dart';
+import '../utils/app_image_helper.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../main.dart';
 
@@ -12,7 +12,6 @@ class AppDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final userAsync = ref.watch(currentUserModelProvider);
     final themeMode = ref.watch(themeModeProvider);
 
@@ -22,16 +21,16 @@ class AppDrawer extends ConsumerWidget {
           // Drawer Header with User Avatar & Eco Score
           userAsync.when(
             data: (user) {
+              final imageProvider = AppImageHelper.getImageProvider(user?.photoUrl);
+
               return UserAccountsDrawerHeader(
                 decoration: const BoxDecoration(
                   gradient: AppColors.ecoGradient,
                 ),
                 currentAccountPicture: CircleAvatar(
                   backgroundColor: Colors.white,
-                  backgroundImage: (user?.photoUrl != null && user!.photoUrl!.isNotEmpty)
-                      ? CachedNetworkImageProvider(user.photoUrl!)
-                      : null,
-                  child: (user?.photoUrl == null || user!.photoUrl!.isEmpty)
+                  backgroundImage: imageProvider,
+                  child: imageProvider == null
                       ? Text(
                           (user?.displayName.isNotEmpty == true)
                               ? user!.displayName[0].toUpperCase()

@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/profile_repository.dart';
 import '../../../data/repositories/profile_repository_impl.dart';
@@ -56,14 +56,14 @@ class ProfileController extends StateNotifier<ProfileState> {
     required String displayName,
     required String bio,
     required String city,
-    File? newImageFile,
+    Uint8List? newImageBytes,
   }) async {
     state = state.copyWith(status: ProfileStatus.loading, errorMessage: null);
     try {
       String? photoUrl = currentModel.photoUrl;
 
-      if (newImageFile != null) {
-        photoUrl = await _repository.uploadProfileImage(currentModel.uid, newImageFile);
+      if (newImageBytes != null && newImageBytes.isNotEmpty) {
+        photoUrl = await _repository.uploadProfileImageBytes(currentModel.uid, newImageBytes);
       }
 
       final updatedLocation = currentModel.location.copyWith(city: city);

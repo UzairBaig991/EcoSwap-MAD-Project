@@ -81,16 +81,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       // Trigger Verification Email
       final user = cred.user;
       if (user != null && !user.emailVerified) {
-        await user.sendEmailVerification();
+        try {
+          await user.sendEmailVerification();
+        } catch (_) {}
       }
 
       await _notifyWelcome('Email Registration');
       return cred;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
-        throw const AuthException('An account already exists for this email address. Please sign in!');
+        throw const AuthException('An account already exists for this email address. Please sign in instead!');
       }
-      throw AuthException(e.message ?? 'Registration failed.', code: e.code);
+      throw AuthException(e.message ?? 'Registration failed. Please try again.', code: e.code);
     } catch (e) {
       throw const AuthException('Registration failed. Please try again.');
     }
