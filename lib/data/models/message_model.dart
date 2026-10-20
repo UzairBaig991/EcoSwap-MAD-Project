@@ -13,6 +13,10 @@ class MessageModel extends Equatable {
   final String? offerItemTitle;
   final String? offerItemImage;
   final String? offerStatus; // Pending, Accepted, Declined
+  final String? imageUrl;
+  final double? locationLat;
+  final double? locationLng;
+  final String? locationAddress;
 
   const MessageModel({
     required this.id,
@@ -26,6 +30,10 @@ class MessageModel extends Equatable {
     this.offerItemTitle,
     this.offerItemImage,
     this.offerStatus,
+    this.imageUrl,
+    this.locationLat,
+    this.locationLng,
+    this.locationAddress,
   });
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
@@ -43,6 +51,10 @@ class MessageModel extends Equatable {
       offerItemTitle: json['offerItemTitle'] as String?,
       offerItemImage: json['offerItemImage'] as String?,
       offerStatus: json['offerStatus'] as String?,
+      imageUrl: json['imageUrl'] as String?,
+      locationLat: (json['locationLat'] as num?)?.toDouble(),
+      locationLng: (json['locationLng'] as num?)?.toDouble(),
+      locationAddress: json['locationAddress'] as String?,
     );
   }
 
@@ -63,6 +75,10 @@ class MessageModel extends Equatable {
       offerItemTitle: data['offerItemTitle'] as String?,
       offerItemImage: data['offerItemImage'] as String?,
       offerStatus: data['offerStatus'] as String?,
+      imageUrl: data['imageUrl'] as String?,
+      locationLat: (data['locationLat'] as num?)?.toDouble(),
+      locationLng: (data['locationLng'] as num?)?.toDouble(),
+      locationAddress: data['locationAddress'] as String?,
     );
   }
 
@@ -78,6 +94,10 @@ class MessageModel extends Equatable {
         'offerItemTitle': offerItemTitle,
         'offerItemImage': offerItemImage,
         'offerStatus': offerStatus,
+        'imageUrl': imageUrl,
+        'locationLat': locationLat,
+        'locationLng': locationLng,
+        'locationAddress': locationAddress,
       };
 
   Map<String, dynamic> toFirestore() {
@@ -91,6 +111,10 @@ class MessageModel extends Equatable {
       'offerItemTitle': offerItemTitle,
       'offerItemImage': offerItemImage,
       'offerStatus': offerStatus,
+      'imageUrl': imageUrl,
+      'locationLat': locationLat,
+      'locationLng': locationLng,
+      'locationAddress': locationAddress,
     };
   }
 
@@ -106,6 +130,10 @@ class MessageModel extends Equatable {
     String? offerItemTitle,
     String? offerItemImage,
     String? offerStatus,
+    String? imageUrl,
+    double? locationLat,
+    double? locationLng,
+    String? locationAddress,
   }) {
     return MessageModel(
       id: id ?? this.id,
@@ -119,6 +147,10 @@ class MessageModel extends Equatable {
       offerItemTitle: offerItemTitle ?? this.offerItemTitle,
       offerItemImage: offerItemImage ?? this.offerItemImage,
       offerStatus: offerStatus ?? this.offerStatus,
+      imageUrl: imageUrl ?? this.imageUrl,
+      locationLat: locationLat ?? this.locationLat,
+      locationLng: locationLng ?? this.locationLng,
+      locationAddress: locationAddress ?? this.locationAddress,
     );
   }
 
@@ -135,5 +167,9 @@ class MessageModel extends Equatable {
         offerItemTitle,
         offerItemImage,
         offerStatus,
+        imageUrl,
+        locationLat,
+        locationLng,
+        locationAddress,
       ];
 }

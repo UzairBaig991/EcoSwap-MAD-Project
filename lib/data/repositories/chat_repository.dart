@@ -25,6 +25,10 @@ abstract class ChatRepository {
     bool isOffer,
     String? offerItemTitle,
     String? offerItemImage,
+    String? imageUrl,
+    double? locationLat,
+    double? locationLng,
+    String? locationAddress,
   });
   Future<void> respondToOffer({
     required String chatId,

@@ -11,6 +11,7 @@ import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/onboarding/providers/onboarding_provider.dart';
 import '../features/onboarding/screens/onboarding_screen.dart';
+import '../features/home/screens/home_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/profile/screens/edit_profile_screen.dart';
 import '../features/profile/screens/carbon_dashboard_screen.dart';
@@ -36,7 +37,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Safety auto-navigation fallback after 2 seconds
     _timer = Timer(const Duration(milliseconds: 1800), () {
       if (mounted) {
         final onboardingCompleted = ref.read(onboardingCompletedProvider);
@@ -109,17 +109,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 }
 
-class PlaceHolderScreen extends StatelessWidget {
-  final String title;
-  const PlaceHolderScreen({super.key, required this.title});
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(title)),
-        body: Center(child: Text('Screen: $title')),
-      );
-}
-
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
   final onboardingCompleted = ref.watch(onboardingCompletedProvider);
@@ -130,17 +119,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthenticated = authState.value != null;
       final location = state.matchedLocation;
 
-      // Allow splash to render initially
       if (location == '/splash') {
         return null;
       }
 
-      // 1. If onboarding not completed -> redirect to /onboarding
       if (!onboardingCompleted) {
         return location == '/onboarding' ? null : '/onboarding';
       }
 
-      // 2. Unauthenticated user trying to access protected routes
       final isAuthRoute = location == '/login' ||
           location == '/register' ||
           location == '/forgot-password' ||
@@ -151,7 +137,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/login';
       }
 
-      // 3. Authenticated user trying to access auth/onboarding routes
       if (isAuthenticated && (isAuthRoute || location == '/splash')) {
         return '/home';
       }
@@ -179,18 +164,66 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => const MainScreen(),
+
+      // Main App Stateful Shell Route
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return MainScreen(navigationShell: navigationShell);
+        },
+        branches: [
+          // Branch 0: Explore / Home
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
+          ),
+
+          // Branch 1: Saved Favorites
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/favorites',
+                builder: (context, state) => const FavoritesScreen(),
+              ),
+            ],
+          ),
+
+          // Branch 2: Post Item
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/create-listing',
+                builder: (context, state) => const CreateListingScreen(),
+              ),
+            ],
+          ),
+
+          // Branch 3: Chat Inbox
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/chats',
+                builder: (context, state) => const ChatListScreen(),
+              ),
+            ],
+          ),
+
+          // Branch 4: Profile
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profile',
+                builder: (context, state) => const ProfileScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
-      GoRoute(
-        path: '/favorites',
-        builder: (context, state) => const FavoritesScreen(),
-      ),
-      GoRoute(
-        path: '/create-listing',
-        builder: (context, state) => const CreateListingScreen(),
-      ),
+
+      // Other Routes
       GoRoute(
         path: '/listing/edit/:id',
         builder: (context, state) {
@@ -201,10 +234,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/challenges',
         builder: (context, state) => const ChallengesScreen(),
-      ),
-      GoRoute(
-        path: '/profile',
-        builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
         path: '/profile/edit',
@@ -220,10 +249,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           final id = state.pathParameters['id'] ?? '';
           return ListingDetailScreen(listingId: id);
         },
-      ),
-      GoRoute(
-        path: '/chats',
-        builder: (context, state) => const ChatListScreen(),
       ),
       GoRoute(
         path: '/chat/:id',

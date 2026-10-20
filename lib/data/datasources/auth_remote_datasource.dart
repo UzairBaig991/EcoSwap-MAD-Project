@@ -12,7 +12,6 @@ abstract class AuthRemoteDataSource {
   Future<UserCredential> signInWithEmailAndPassword(String email, String password);
   Future<UserCredential> signUpWithEmailAndPassword(String email, String password);
   Future<UserCredential> signInWithGoogle();
-  Future<UserCredential> signInWithFacebook();
   Future<UserCredential> signInAnonymously();
   Future<void> sendPasswordResetEmail(String email);
   Future<void> signOut();
@@ -65,9 +64,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       await _notifyWelcome('Email');
       return cred;
     } on FirebaseAuthException catch (e) {
-      throw AuthException(e.message ?? 'Authentication failed. Please check your credentials.', code: e.code);
+      if (e.code == 'user-not-found' || e.code == 'invalid-credential' || e.code == 'wrong-password') {
+        throw const AuthException('This email address does not exist or password is wrong. Please sign up or check your details.');
+      }
+      throw AuthException(e.message ?? 'This email address is not registered. Please sign up first!', code: e.code);
     } catch (e) {
-      throw const AuthException('Authentication failed. Please try again.');
+      throw const AuthException('Authentication failed. This email does not exist.');
     }
   }
 
@@ -75,9 +77,19 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserCredential> signUpWithEmailAndPassword(String email, String password) async {
     try {
       final cred = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+      
+      // Trigger Verification Email
+      final user = cred.user;
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification();
+      }
+
       await _notifyWelcome('Email Registration');
       return cred;
     } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        throw const AuthException('An account already exists for this email address. Please sign in!');
+      }
       throw AuthException(e.message ?? 'Registration failed.', code: e.code);
     } catch (e) {
       throw const AuthException('Registration failed. Please try again.');
@@ -130,37 +142,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<UserCredential> signInWithFacebook() async {
-    try {
-      UserCredential cred;
-      final facebookProvider = FacebookAuthProvider();
-      facebookProvider.addScope('email');
-      facebookProvider.addScope('public_profile');
-
-      if (kIsWeb) {
-        cred = await _firebaseAuth.signInWithPopup(facebookProvider);
-      } else {
-        cred = await _firebaseAuth.signInWithProvider(facebookProvider);
-      }
-
-      await _notifyWelcome('Facebook Account');
-      return cred;
-    } on FirebaseAuthException catch (e) {
-      final code = e.code;
-      final msg = e.message;
-      if (code == 'popup-closed-by-user' || code == 'cancelled') {
-        throw const AuthException('Facebook Sign-In popup was closed.');
-      }
-      if (code == 'operation-not-allowed' || (msg != null && msg.contains('disabled'))) {
-        throw const AuthException('Facebook Sign-In is currently disabled in your Firebase Console. You can sign in instantly with Google or Email!');
-      }
-      throw AuthException(msg != null && msg.isNotEmpty ? msg : 'Facebook Sign-In failed ($code).', code: code);
-    } catch (e) {
-      throw const AuthException('Facebook Sign-In is disabled in Firebase Console. Please sign in with Google or Email!');
-    }
-  }
-
-  @override
   Future<UserCredential> signInAnonymously() async {
     try {
       final cred = await _firebaseAuth.signInAnonymously();
@@ -176,6 +157,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       await _firebaseAuth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        throw const AuthException('This email address does not exist. Please check your spelling or sign up.');
+      }
       throw AuthException(e.message ?? 'Failed to send password reset email.', code: e.code);
     } catch (e) {
       throw AuthException(e.toString());

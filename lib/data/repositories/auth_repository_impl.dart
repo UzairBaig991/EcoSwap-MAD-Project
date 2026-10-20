@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../datasources/auth_remote_datasource.dart';
 import '../models/user_model.dart';
 import 'auth_repository.dart';
-import '../../core/constants/app_constants.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _remoteDataSource;
@@ -16,87 +15,89 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   User? get currentUser => _remoteDataSource.currentUser;
 
-  UserModel _createDefaultUserModel(User user, {String? defaultName}) {
-    return UserModel(
+  @override
+  Future<UserModel?> signInWithEmailAndPassword(String email, String password) async {
+    final userCredential = await _remoteDataSource.signInWithEmailAndPassword(email, password);
+    final user = userCredential.user;
+    if (user == null) return null;
+
+    var profile = await _remoteDataSource.getUserProfile(user.uid);
+    if (profile == null) {
+      profile = UserModel(
+        uid: user.uid,
+        email: user.email ?? email,
+        displayName: user.displayName ?? email.split('@').first,
+        photoUrl: user.photoURL,
+        location: const UserLocation(lat: 0.0, lng: 0.0, city: 'Unknown', geohash: ''),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      await _remoteDataSource.createUserProfile(profile);
+    }
+    return profile;
+  }
+
+  @override
+  Future<UserModel?> signUpWithEmailAndPassword(String email, String password, String displayName) async {
+    final userCredential = await _remoteDataSource.signUpWithEmailAndPassword(email, password);
+    final user = userCredential.user;
+    if (user == null) return null;
+
+    final newProfile = UserModel(
       uid: user.uid,
-      email: user.email ?? 'guest@ecoswap.app',
-      displayName: user.displayName ?? defaultName ?? (user.isAnonymous ? 'Guest Swapper' : 'EcoSwapper'),
+      email: email,
+      displayName: displayName,
       photoUrl: user.photoURL,
-      location: const UserLocation(
-        lat: AppConstants.defaultLatitude,
-        lng: AppConstants.defaultLongitude,
-        city: 'San Francisco',
-        geohash: '9q8yy',
-      ),
+      location: const UserLocation(lat: 0.0, lng: 0.0, city: 'Unknown', geohash: ''),
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
+
+    await _remoteDataSource.createUserProfile(newProfile);
+    return newProfile;
   }
 
   @override
-  Future<UserModel?> signInWithEmailAndPassword(String email, String password) async {
-    final credential = await _remoteDataSource.signInWithEmailAndPassword(email, password);
-    final user = credential.user;
+  Future<UserModel?> signInWithGoogle() async {
+    final userCredential = await _remoteDataSource.signInWithGoogle();
+    final user = userCredential.user;
     if (user == null) return null;
 
-    final profile = await _remoteDataSource.getUserProfile(user.uid);
-    if (profile != null) return profile;
-
-    final newProfile = _createDefaultUserModel(user, defaultName: email.split('@').first);
-    await _remoteDataSource.createUserProfile(newProfile);
-    return newProfile;
+    var profile = await _remoteDataSource.getUserProfile(user.uid);
+    if (profile == null) {
+      profile = UserModel(
+        uid: user.uid,
+        email: user.email ?? '',
+        displayName: user.displayName ?? 'Eco Swapper',
+        photoUrl: user.photoURL,
+        location: const UserLocation(lat: 0.0, lng: 0.0, city: 'Unknown', geohash: ''),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      await _remoteDataSource.createUserProfile(profile);
+    }
+    return profile;
   }
 
   @override
-  Future<UserModel> signUpWithEmailAndPassword({
-    required String email,
-    required String password,
-    required String displayName,
-  }) async {
-    final credential = await _remoteDataSource.signUpWithEmailAndPassword(email, password);
-    final user = credential.user!;
+  Future<UserModel?> signInAnonymously() async {
+    final userCredential = await _remoteDataSource.signInAnonymously();
+    final user = userCredential.user;
+    if (user == null) return null;
 
-    await user.updateDisplayName(displayName);
-
-    final newProfile = _createDefaultUserModel(user, defaultName: displayName);
-    await _remoteDataSource.createUserProfile(newProfile);
-    return newProfile;
-  }
-
-  @override
-  Future<UserModel> signInWithGoogle() async {
-    final credential = await _remoteDataSource.signInWithGoogle();
-    final user = credential.user!;
-
-    final existingProfile = await _remoteDataSource.getUserProfile(user.uid);
-    if (existingProfile != null) return existingProfile;
-
-    final newProfile = _createDefaultUserModel(user);
-    await _remoteDataSource.createUserProfile(newProfile);
-    return newProfile;
-  }
-
-  @override
-  Future<UserModel> signInWithFacebook() async {
-    final credential = await _remoteDataSource.signInWithFacebook();
-    final user = credential.user!;
-
-    final existingProfile = await _remoteDataSource.getUserProfile(user.uid);
-    if (existingProfile != null) return existingProfile;
-
-    final newProfile = _createDefaultUserModel(user);
-    await _remoteDataSource.createUserProfile(newProfile);
-    return newProfile;
-  }
-
-  @override
-  Future<UserModel> signInAnonymously() async {
-    final credential = await _remoteDataSource.signInAnonymously();
-    final user = credential.user!;
-
-    final newProfile = _createDefaultUserModel(user, defaultName: 'Guest Swapper');
-    await _remoteDataSource.createUserProfile(newProfile);
-    return newProfile;
+    var profile = await _remoteDataSource.getUserProfile(user.uid);
+    if (profile == null) {
+      profile = UserModel(
+        uid: user.uid,
+        email: '',
+        displayName: 'Guest Swapper',
+        location: const UserLocation(lat: 0.0, lng: 0.0, city: 'Unknown', geohash: ''),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      await _remoteDataSource.createUserProfile(profile);
+    }
+    return profile;
   }
 
   @override
@@ -110,15 +111,14 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<UserModel?> getCurrentUserModel() async {
-    final user = currentUser;
+  Future<UserModel?> getCurrentUserProfile() async {
+    final user = _remoteDataSource.currentUser;
     if (user == null) return null;
-    final profile = await _remoteDataSource.getUserProfile(user.uid);
-    return profile ?? _createDefaultUserModel(user);
+    return await _remoteDataSource.getUserProfile(user.uid);
   }
 
   @override
-  Future<void> updateUserProfile(UserModel userModel) async {
-    await _remoteDataSource.updateUserProfile(userModel);
+  Future<void> updateUserProfile(UserModel user) async {
+    await _remoteDataSource.updateUserProfile(user);
   }
 }

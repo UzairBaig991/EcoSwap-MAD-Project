@@ -15,8 +15,10 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
   bool _obscurePassword = true;
 
   @override
@@ -26,26 +28,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleEmailLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
     final success = await ref.read(authControllerProvider.notifier).signInWithEmailAndPassword(
-          _emailController.text.trim(),
-          _passwordController.text,
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
         );
 
     if (success && mounted) {
       context.go('/home');
     } else if (mounted) {
       final error = ref.read(authControllerProvider).errorMessage;
-      if (error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error ?? 'Login failed. Please check your credentials.'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 4),
+        ),
+      );
     }
   }
 
@@ -60,24 +61,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           SnackBar(
             content: Text(error),
             backgroundColor: error.contains('cancelled') ? AppColors.warning : AppColors.error,
-            duration: const Duration(seconds: 4),
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _handleFacebookSignIn() async {
-    final success = await ref.read(authControllerProvider.notifier).signInWithFacebook();
-    if (success && mounted) {
-      context.go('/home');
-    } else if (mounted) {
-      final error = ref.read(authControllerProvider).errorMessage;
-      if (error != null && error.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error),
-            backgroundColor: AppColors.warning,
             duration: const Duration(seconds: 4),
           ),
         );
@@ -108,22 +91,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo & Header
+                  // Logo / Header Icon
                   Center(
                     child: Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(20),
                       decoration: const BoxDecoration(
                         color: AppColors.primaryContainer,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.swap_horizontal_circle_rounded,
-                        size: 48,
+                        size: 56,
                         color: AppColors.primary,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
+
+                  // Title & Subtitle
                   Text(
                     AppStrings.welcomeBack,
                     textAlign: TextAlign.center,
@@ -139,7 +124,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 32),
 
                   // Email Field
                   TextFormField(
@@ -155,7 +140,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       if (value == null || value.trim().isEmpty) {
                         return 'Please enter your email';
                       }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value.trim())) {
+                      if (!value.contains('@')) {
                         return 'Please enter a valid email address';
                       }
                       return null;
@@ -168,7 +153,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => _handleLogin(),
+                    onFieldSubmitted: (_) => _handleEmailLogin(),
                     decoration: InputDecoration(
                       labelText: 'Password',
                       prefixIcon: const Icon(Icons.lock_outline_rounded),
@@ -189,26 +174,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your password';
                       }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
-                      }
                       return null;
                     },
                   ),
 
-                  // Forgot Password
+                  // Forgot Password Link
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () => context.push('/forgot-password'),
-                      child: const Text(AppStrings.forgotPassword),
+                      child: const Text('Forgot Password?'),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
 
-                  // Sign In Button
+                  // Login Button
                   ElevatedButton(
-                    onPressed: isLoading ? null : _handleLogin,
+                    onPressed: isLoading ? null : _handleEmailLogin,
                     child: isLoading
                         ? const SizedBox(
                             height: 24,
@@ -220,14 +202,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           )
                         : const Text('Sign In with Email'),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
 
                   // Divider
                   Row(
                     children: [
                       Expanded(child: Divider(color: theme.colorScheme.outline)),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
                           'OR SOCIAL SIGN IN',
                           style: theme.textTheme.labelSmall?.copyWith(
@@ -239,38 +221,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Expanded(child: Divider(color: theme.colorScheme.outline)),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
                   // Google Sign In Button
                   OutlinedButton.icon(
                     onPressed: isLoading ? null : _handleGoogleSignIn,
                     icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
-                    label: const Text(AppStrings.googleSignIn),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Facebook Sign In Button
-                  OutlinedButton.icon(
-                    onPressed: isLoading ? null : _handleFacebookSignIn,
-                    icon: const Icon(Icons.facebook_rounded, color: Color(0xFF1877F2), size: 22),
-                    label: const Text('Continue with Facebook'),
+                    label: const Text('Continue with Google'),
                   ),
                   const SizedBox(height: 16),
 
-                  // Guest Sign In Quick Option
+                  // Anonymous Guest Mode
                   TextButton.icon(
                     onPressed: isLoading ? null : _handleGuestSignIn,
-                    icon: const Icon(Icons.explore_outlined, size: 20),
+                    icon: const Icon(Icons.explore_outlined, size: 18),
                     label: const Text('Explore as Guest (No Login Required)'),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
 
                   // Sign Up Link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Don\'t have an account?',
+                        "Don't have an account?",
                         style: theme.textTheme.bodyMedium,
                       ),
                       TextButton(

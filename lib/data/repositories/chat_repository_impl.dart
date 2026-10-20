@@ -54,6 +54,10 @@ class ChatRepositoryImpl implements ChatRepository {
     bool isOffer = false,
     String? offerItemTitle,
     String? offerItemImage,
+    String? imageUrl,
+    double? locationLat,
+    double? locationLng,
+    String? locationAddress,
   }) async {
     await _remoteDataSource.sendMessage(
       chatId: chatId,
@@ -64,6 +68,10 @@ class ChatRepositoryImpl implements ChatRepository {
       isOffer: isOffer,
       offerItemTitle: offerItemTitle,
       offerItemImage: offerItemImage,
+      imageUrl: imageUrl,
+      locationLat: locationLat,
+      locationLng: locationLng,
+      locationAddress: locationAddress,
     );
   }
 

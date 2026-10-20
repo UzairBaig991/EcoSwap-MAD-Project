@@ -27,11 +27,15 @@ abstract class ChatRemoteDataSource {
     bool isOffer,
     String? offerItemTitle,
     String? offerItemImage,
+    String? imageUrl,
+    double? locationLat,
+    double? locationLng,
+    String? locationAddress,
   });
   Future<void> respondToOffer({
     required String chatId,
     required String messageId,
-    required String newStatus, // Accepted, Declined
+    required String newStatus,
   });
   Future<void> markAsRead(String chatId, String userId);
 }
@@ -130,6 +134,10 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     bool isOffer = false,
     String? offerItemTitle,
     String? offerItemImage,
+    String? imageUrl,
+    double? locationLat,
+    double? locationLng,
+    String? locationAddress,
   }) async {
     try {
       final messageRef = _firestore.collection('chats').doc(chatId).collection('messages').doc();
@@ -141,17 +149,29 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         senderName: senderName,
         text: text,
         createdAt: DateTime.now(),
-        readBy: [senderId],
+        readBy: [senderId, recipientId], // Real-time delivery
         isOffer: isOffer,
         offerItemTitle: offerItemTitle,
         offerItemImage: offerItemImage,
         offerStatus: isOffer ? 'Pending' : null,
+        imageUrl: imageUrl,
+        locationLat: locationLat,
+        locationLng: locationLng,
+        locationAddress: locationAddress,
       );
 
       await messageRef.set(message.toFirestore());
 
       // Update Chat last message & increment unread counter
-      final lastMsgText = isOffer ? '🔄 Offered swap: "$offerItemTitle"' : text;
+      String lastMsgText = text;
+      if (isOffer) {
+        lastMsgText = '🔄 Swap Offer: "$offerItemTitle"';
+      } else if (imageUrl != null) {
+        lastMsgText = '📷 Photo';
+      } else if (locationAddress != null) {
+        lastMsgText = '📍 Shared Pickup Location';
+      }
+
       await _firestore.collection('chats').doc(chatId).update({
         'lastMessage': lastMsgText,
         'lastMessageSenderId': senderId,

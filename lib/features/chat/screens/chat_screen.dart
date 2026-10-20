@@ -1,10 +1,14 @@
+import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/network/cloudinary_service.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../data/models/message_model.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -32,8 +36,17 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ImagePicker _picker = ImagePicker();
+
   ChatModel? _activeChat;
   bool _initializing = true;
+
+  final List<String> _quickReplies = [
+    'Is this item still available?',
+    'Where can we meet to swap?',
+    'I can pick it up today!',
+    'What condition is it in?',
+  ];
 
   @override
   void initState() {
@@ -87,9 +100,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  Future<void> _handleSend({bool isOffer = false, String? offerTitle, String? offerImage}) async {
+  Future<void> _handleSend({
+    bool isOffer = false,
+    String? offerTitle,
+    String? offerImage,
+    String? imageUrl,
+    String? locationAddress,
+  }) async {
     final text = _textController.text.trim();
-    if ((text.isEmpty && !isOffer) || _activeChat == null) return;
+    if ((text.isEmpty && !isOffer && imageUrl == null && locationAddress == null) ||
+        _activeChat == null) {
+      return;
+    }
 
     final currentUser = ref.read(authStateProvider).asData?.value;
     if (currentUser == null) return;
@@ -103,16 +125,120 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     final success = await ref.read(chatControllerProvider.notifier).sendMessage(
           chatId: _activeChat!.id,
-          text: isOffer ? 'I offered to swap with: "$offerTitle"' : text,
+          text: isOffer
+              ? 'Offered swap with: "$offerTitle"'
+              : (imageUrl != null
+                  ? '📷 Photo'
+                  : (locationAddress != null ? '📍 Shared Location: $locationAddress' : text)),
           recipientId: recipientId,
           isOffer: isOffer,
           offerItemTitle: offerTitle,
           offerItemImage: offerImage,
+          imageUrl: imageUrl,
+          locationLat: locationAddress != null ? 37.7749 : null,
+          locationLng: locationAddress != null ? -122.4194 : null,
+          locationAddress: locationAddress,
         );
 
     if (success) {
       Timer(const Duration(milliseconds: 100), _scrollToBottom);
     }
+  }
+
+  Future<void> _pickAndSendImage() async {
+    try {
+      final XFile? photo = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+      if (photo == null) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Uploading photo...'), duration: Duration(seconds: 2)),
+      );
+
+      final uploadedUrl = await CloudinaryService.uploadImage(File(photo.path));
+      if (uploadedUrl != null) {
+        _handleSend(imageUrl: uploadedUrl);
+      }
+    } catch (_) {}
+  }
+
+  void _showAttachmentMenu() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Photo Attachment
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _pickAndSendImage();
+                    },
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 28,
+                          backgroundColor: Colors.purple.shade100,
+                          child: const Icon(Icons.photo_library_rounded, color: Colors.purple, size: 28),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text('Gallery', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+
+                  // Swap Offer Attachment
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _showMakeOfferModal();
+                    },
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 28,
+                          backgroundColor: AppColors.primaryContainer,
+                          child: const Icon(Icons.swap_horizontal_circle_rounded, color: AppColors.primary, size: 28),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text('Swap Offer', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+
+                  // Share Location Attachment
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _handleSend(locationAddress: 'Downtown Green Park Pickup Point');
+                    },
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 28,
+                          backgroundColor: Colors.green.shade100,
+                          child: const Icon(Icons.location_on_rounded, color: Colors.green, size: 28),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text('Location', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _showMakeOfferModal() {
@@ -383,45 +509,102 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                               constraints: BoxConstraints(
-                                maxWidth: MediaQuery.of(context).size.width * 0.75,
+                                maxWidth: MediaQuery.of(context).size.width * 0.78,
                               ),
                               decoration: BoxDecoration(
                                 color: isMe
-                                    ? AppColors.primary
+                                    ? const Color(/* WhatsApp Green */ 0xFFDCF8C6)
                                     : (theme.brightness == Brightness.dark
                                         ? AppColors.surfaceVariantDark
-                                        : AppColors.surfaceVariantLight),
+                                        : Colors.white),
                                 borderRadius: BorderRadius.only(
-                                  topLeft: const Radius.circular(16),
-                                  topRight: const Radius.circular(16),
-                                  bottomLeft: isMe ? const Radius.circular(16) : const Radius.circular(4),
-                                  bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
+                                  topLeft: const Radius.circular(14),
+                                  topRight: const Radius.circular(14),
+                                  bottomLeft: isMe ? const Radius.circular(14) : const Radius.circular(2),
+                                  bottomRight: isMe ? const Radius.circular(2) : const Radius.circular(14),
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.04),
+                                    blurRadius: 3,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
                               ),
                               child: Column(
                                 crossAxisAlignment:
                                     isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                                 children: [
+                                  if (msg.imageUrl != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 8),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: CachedNetworkImage(
+                                          imageUrl: msg.imageUrl!,
+                                          width: 200,
+                                          height: 160,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                  if (msg.locationAddress != null)
+                                    Container(
+                                      margin: const EdgeInsets.only(bottom: 6),
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.shade50,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.location_on_rounded, color: Colors.green, size: 20),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              msg.locationAddress!,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   Text(
                                     msg.text,
                                     style: TextStyle(
-                                      color: isMe
-                                          ? Colors.white
-                                          : theme.colorScheme.onSurface,
+                                      color: isMe ? Colors.black87 : theme.colorScheme.onSurface,
                                       fontSize: 15,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  Text(
-                                    AppFormatters.formatTimeAgo(msg.createdAt),
-                                    style: TextStyle(
-                                      color: isMe
-                                          ? Colors.white70
-                                          : theme.colorScheme.onSurfaceVariant,
-                                      fontSize: 10,
-                                    ),
+
+                                  // Time & Double Blue Ticks (WhatsApp Style)
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        AppFormatters.formatTimeAgo(msg.createdAt),
+                                        style: TextStyle(
+                                          color: Colors.grey.shade600,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                      if (isMe) ...[
+                                        const SizedBox(width: 4),
+                                        // WhatsApp Double Blue Ticks (✓✓)
+                                        const Icon(
+                                          Icons.done_all_rounded,
+                                          size: 16,
+                                          color: Color(0xFF34B7F1), // WhatsApp Blue
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ],
                               ),
@@ -434,6 +617,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     error: (err, stack) => Center(child: Text('Error: $err')),
                   ),
                 ),
+
+                // Quick Replies Bar
+                SizedBox(
+                  height: 36,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    itemCount: _quickReplies.length,
+                    itemBuilder: (ctx, idx) {
+                      final text = _quickReplies[idx];
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: ActionChip(
+                          label: Text(text, style: const TextStyle(fontSize: 11)),
+                          onPressed: () {
+                            _textController.text = text;
+                            _handleSend();
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 6),
 
                 // Message Input Box
                 SafeArea(
@@ -448,9 +655,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.card_giftcard_rounded, color: AppColors.primary),
-                          tooltip: 'Propose Swap Offer',
-                          onPressed: _showMakeOfferModal,
+                          icon: const Icon(Icons.add_rounded, color: AppColors.primary, size: 28),
+                          tooltip: 'Add Photo or Location',
+                          onPressed: _showAttachmentMenu,
                         ),
                         Expanded(
                           child: TextField(

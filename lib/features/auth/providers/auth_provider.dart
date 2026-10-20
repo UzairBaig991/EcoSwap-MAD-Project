@@ -1,17 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../../data/models/user_model.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/auth_repository_impl.dart';
-import '../../../data/models/user_model.dart';
-import '../../../core/errors/exceptions.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl();
 });
 
 final authStateProvider = StreamProvider<User?>((ref) {
-  final repository = ref.watch(authRepositoryProvider);
-  return repository.authStateChanges;
+  return ref.watch(authRepositoryProvider).authStateChanges;
 });
 
 final currentUserModelProvider = FutureProvider<UserModel?>((ref) async {
@@ -19,37 +18,38 @@ final currentUserModelProvider = FutureProvider<UserModel?>((ref) async {
   final user = authState.asData?.value;
   if (user == null) return null;
 
-  final repository = ref.watch(authRepositoryProvider);
-  return await repository.getCurrentUserModel();
+  final repo = ref.watch(authRepositoryProvider);
+  return await repo.getCurrentUserProfile();
 });
 
-enum AuthStatus { initial, loading, success, error }
+enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
 class AuthState {
   final AuthStatus status;
+  final UserModel? user;
   final String? errorMessage;
-  final UserModel? userModel;
 
   const AuthState({
     this.status = AuthStatus.initial,
+    this.user,
     this.errorMessage,
-    this.userModel,
   });
 
   AuthState copyWith({
     AuthStatus? status,
+    UserModel? user,
     String? errorMessage,
-    UserModel? userModel,
   }) {
     return AuthState(
       status: status ?? this.status,
+      user: user ?? this.user,
       errorMessage: errorMessage,
-      userModel: userModel ?? this.userModel,
     );
   }
 }
 
-final authControllerProvider = StateNotifierProvider<AuthController, AuthState>((ref) {
+final authControllerProvider =
+    StateNotifierProvider<AuthController, AuthState>((ref) {
   return AuthController(ref.watch(authRepositoryProvider), ref);
 });
 
@@ -59,28 +59,29 @@ class AuthController extends StateNotifier<AuthState> {
 
   AuthController(this._repository, this._ref) : super(const AuthState());
 
-  String _formatErrorMessage(dynamic error) {
-    if (error is AuthException) {
-      return error.message.isNotEmpty ? error.message : 'Authentication error occurred.';
-    }
-    if (error is FirebaseAuthException) {
-      return error.message ?? error.code;
-    }
-    final s = error.toString().replaceAll('Exception: ', '');
-    return s.isNotEmpty ? s : 'Sign in error occurred. Please try Email Sign In or Guest mode.';
-  }
-
-  Future<bool> signInWithEmailAndPassword(String email, String password) async {
+  Future<bool> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+
     try {
       final user = await _repository.signInWithEmailAndPassword(email, password);
-      state = state.copyWith(status: AuthStatus.success, userModel: user);
-      _ref.invalidate(currentUserModelProvider);
-      return true;
+      if (user != null) {
+        state = state.copyWith(status: AuthStatus.authenticated, user: user);
+        _ref.invalidate(currentUserModelProvider);
+        return true;
+      } else {
+        state = state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'Failed to sign in. User not found.',
+        );
+        return false;
+      }
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: _formatErrorMessage(e),
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
       );
       return false;
     }
@@ -92,19 +93,24 @@ class AuthController extends StateNotifier<AuthState> {
     required String displayName,
   }) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+
     try {
-      final user = await _repository.signUpWithEmailAndPassword(
-        email: email,
-        password: password,
-        displayName: displayName,
-      );
-      state = state.copyWith(status: AuthStatus.success, userModel: user);
-      _ref.invalidate(currentUserModelProvider);
-      return true;
+      final user = await _repository.signUpWithEmailAndPassword(email, password, displayName);
+      if (user != null) {
+        state = state.copyWith(status: AuthStatus.authenticated, user: user);
+        _ref.invalidate(currentUserModelProvider);
+        return true;
+      } else {
+        state = state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'Failed to create account.',
+        );
+        return false;
+      }
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: _formatErrorMessage(e),
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
       );
       return false;
     }
@@ -112,31 +118,25 @@ class AuthController extends StateNotifier<AuthState> {
 
   Future<bool> signInWithGoogle() async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+
     try {
       final user = await _repository.signInWithGoogle();
-      state = state.copyWith(status: AuthStatus.success, userModel: user);
-      _ref.invalidate(currentUserModelProvider);
-      return true;
+      if (user != null) {
+        state = state.copyWith(status: AuthStatus.authenticated, user: user);
+        _ref.invalidate(currentUserModelProvider);
+        return true;
+      } else {
+        state = state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'Google Sign-In failed.',
+        );
+        return false;
+      }
     } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '');
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: _formatErrorMessage(e),
-      );
-      return false;
-    }
-  }
-
-  Future<bool> signInWithFacebook() async {
-    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
-    try {
-      final user = await _repository.signInWithFacebook();
-      state = state.copyWith(status: AuthStatus.success, userModel: user);
-      _ref.invalidate(currentUserModelProvider);
-      return true;
-    } catch (e) {
-      state = state.copyWith(
-        status: AuthStatus.error,
-        errorMessage: _formatErrorMessage(e),
+        errorMessage: msg.contains('cancelled') ? 'Google Sign-In was cancelled.' : msg,
       );
       return false;
     }
@@ -144,15 +144,24 @@ class AuthController extends StateNotifier<AuthState> {
 
   Future<bool> signInAnonymously() async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+
     try {
       final user = await _repository.signInAnonymously();
-      state = state.copyWith(status: AuthStatus.success, userModel: user);
-      _ref.invalidate(currentUserModelProvider);
-      return true;
+      if (user != null) {
+        state = state.copyWith(status: AuthStatus.authenticated, user: user);
+        _ref.invalidate(currentUserModelProvider);
+        return true;
+      } else {
+        state = state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'Guest sign in failed.',
+        );
+        return false;
+      }
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: _formatErrorMessage(e),
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
       );
       return false;
     }
@@ -160,14 +169,15 @@ class AuthController extends StateNotifier<AuthState> {
 
   Future<bool> sendPasswordResetEmail(String email) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+
     try {
       await _repository.sendPasswordResetEmail(email);
-      state = state.copyWith(status: AuthStatus.success);
+      state = state.copyWith(status: AuthStatus.unauthenticated);
       return true;
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: _formatErrorMessage(e),
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
       );
       return false;
     }
@@ -175,15 +185,8 @@ class AuthController extends StateNotifier<AuthState> {
 
   Future<void> signOut() async {
     state = state.copyWith(status: AuthStatus.loading);
-    try {
-      await _repository.signOut();
-      state = const AuthState(status: AuthStatus.initial);
-      _ref.invalidate(currentUserModelProvider);
-    } catch (e) {
-      state = state.copyWith(
-        status: AuthStatus.error,
-        errorMessage: _formatErrorMessage(e),
-      );
-    }
+    await _repository.signOut();
+    state = const AuthState(status: AuthStatus.unauthenticated);
+    _ref.invalidate(currentUserModelProvider);
   }
 }

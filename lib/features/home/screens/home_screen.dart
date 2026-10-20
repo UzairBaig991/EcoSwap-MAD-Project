@@ -7,6 +7,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/widgets/app_drawer.dart';
 import '../../../data/models/listing_model.dart';
 import '../../favorites/providers/favorites_provider.dart';
 import '../providers/home_provider.dart';
@@ -206,7 +207,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         icon: hue,
         infoWindow: InfoWindow(
           title: item.title,
-          snippet: '${item.category} • ${item.type}',
+          snippet: '${item.category} • ${item.location.address}',
         ),
         onTap: () => _showListingMapPreview(item),
       );
@@ -222,8 +223,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final favoriteIds = ref.watch(favoritesControllerProvider);
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
-        titleSpacing: 16,
+        titleSpacing: 0,
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: const Icon(Icons.menu_rounded, color: AppColors.primary),
+            tooltip: 'Open Navigation Menu',
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
         title: Row(
           children: [
             Container(
@@ -235,7 +244,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: const Icon(
                 Icons.swap_horizontal_circle_rounded,
                 color: AppColors.primary,
-                size: 24,
+                size: 22,
               ),
             ),
             const SizedBox(width: 8),
@@ -364,17 +373,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.map_rounded, color: AppColors.primary, size: 24),
+                              const Icon(Icons.location_on_rounded, color: AppColors.primary, size: 24),
                               const SizedBox(width: 8),
                               Text(
-                                'Nearby Swaps (${listings.length} items within ${filter.radiusKm.round()} km)',
+                                'Nearby Items (${listings.length} items within ${filter.radiusKm.round()} km)',
                                 style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Native interactive Google Maps run on Android & iOS mobile devices.\nShowing proximity-sorted listings below:',
+                            'Showing location addresses and proximity-sorted listings:',
                             style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                           ),
                           const SizedBox(height: 12),

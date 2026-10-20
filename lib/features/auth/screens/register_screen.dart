@@ -80,24 +80,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
-  Future<void> _handleFacebookSignIn() async {
-    final success = await ref.read(authControllerProvider.notifier).signInWithFacebook();
-    if (success && mounted) {
-      context.go('/home');
-    } else if (mounted) {
-      final error = ref.read(authControllerProvider).errorMessage;
-      if (error != null && error.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error),
-            backgroundColor: AppColors.warning,
-            duration: const Duration(seconds: 4),
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -309,25 +291,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Social Options Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: isLoading ? null : _handleGoogleSignIn,
-                          icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
-                          label: const Text('Google'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: isLoading ? null : _handleFacebookSignIn,
-                          icon: const Icon(Icons.facebook_rounded, color: Color(0xFF1877F2), size: 20),
-                          label: const Text('Facebook'),
-                        ),
-                      ),
-                    ],
+                  // Google Social Option
+                  OutlinedButton.icon(
+                    onPressed: isLoading ? null : _handleGoogleSignIn,
+                    icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
+                    label: const Text('Continue with Google'),
                   ),
                   const SizedBox(height: 24),
 

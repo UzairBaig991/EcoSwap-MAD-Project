@@ -102,6 +102,10 @@ class ChatController extends StateNotifier<ChatOperationState> {
     bool isOffer = false,
     String? offerItemTitle,
     String? offerItemImage,
+    String? imageUrl,
+    double? locationLat,
+    double? locationLng,
+    String? locationAddress,
   }) async {
     try {
       final currentUser = await _ref.read(currentUserModelProvider.future);
@@ -116,6 +120,10 @@ class ChatController extends StateNotifier<ChatOperationState> {
         isOffer: isOffer,
         offerItemTitle: offerItemTitle,
         offerItemImage: offerItemImage,
+        imageUrl: imageUrl,
+        locationLat: locationLat,
+        locationLng: locationLng,
+        locationAddress: locationAddress,
       );
       return true;
     } catch (e) {
