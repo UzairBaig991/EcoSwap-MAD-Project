@@ -101,16 +101,16 @@ class ListingCard extends StatelessWidget {
                   ),
                 ),
 
-                // Listing Type Badge (Top Left)
+                // Listing Type Badge (Top Left with Gradient)
                 Positioned(
                   top: 12,
                   left: 12,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: listing.type == 'Free'
-                          ? AppColors.freeType
-                          : (listing.type == 'Swap' ? AppColors.swapType : AppColors.paidType),
+                      gradient: listing.type == 'Free'
+                          ? AppColors.ecoGradient
+                          : (listing.type == 'Swap' ? AppColors.impactGradient : AppColors.amberGradient),
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
@@ -157,15 +157,21 @@ class ListingCard extends StatelessWidget {
                   ),
                 ),
 
-                // CO2 Saved Highlight Badge (Bottom Left)
+                // CO2 Saved Highlight Badge (Bottom Left with Gradient)
                 Positioned(
                   bottom: 12,
                   left: 12,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColors.co2Green,
+                      gradient: AppColors.ecoGradient,
                       borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.25),
+                          blurRadius: 4,
+                        ),
+                      ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,

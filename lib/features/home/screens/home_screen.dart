@@ -263,13 +263,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             tooltip: 'Filter & Sort',
             onPressed: _showFilterModal,
           ),
-          IconButton(
-            icon: Icon(
-              filter.isMapView ? Icons.view_list_rounded : Icons.map_rounded,
-              color: AppColors.primary,
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () => filterNotifier.toggleViewMode(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: AppColors.ecoGradient,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      filter.isMapView ? Icons.view_list_rounded : Icons.map_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      filter.isMapView ? 'List' : 'Map',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            tooltip: filter.isMapView ? 'List View' : 'Map View',
-            onPressed: () => filterNotifier.toggleViewMode(),
           ),
         ],
       ),
@@ -329,7 +354,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // Horizontal Category Selector Chips
+                // Horizontal Category Selector Chips with Gradient Selection
                 SizedBox(
                   height: 38,
                   child: ListView(
@@ -338,17 +363,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       final isSelected = filter.selectedCategory == category;
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
-                          label: Text(category),
-                          selected: isSelected,
-                          selectedColor: AppColors.primaryContainer,
-                          labelStyle: TextStyle(
-                            color: isSelected ? AppColors.primaryDark : theme.textTheme.bodyMedium?.color,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        child: GestureDetector(
+                          onTap: () => filterNotifier.setCategory(category),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              gradient: isSelected ? AppColors.ecoGradient : null,
+                              color: isSelected ? null : theme.colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected ? Colors.transparent : theme.colorScheme.outline.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                category,
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : theme.textTheme.bodyMedium?.color,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
                           ),
-                          onSelected: (selected) {
-                            if (selected) filterNotifier.setCategory(category);
-                          },
                         ),
                       );
                     }).toList(),
