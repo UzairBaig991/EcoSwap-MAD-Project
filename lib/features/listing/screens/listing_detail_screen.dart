@@ -177,7 +177,13 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                               child: const Icon(Icons.inventory_2_rounded, size: 64, color: AppColors.primary),
                             );
                           }
-                          return _buildImageWidget(item.images[idx]);
+                          final imageWidget = _buildImageWidget(item.images[idx]);
+                          return idx == 0
+                              ? Hero(
+                                  tag: 'hero-listing-image-${item.id}',
+                                  child: imageWidget,
+                                )
+                              : imageWidget;
                         },
                       ),
 

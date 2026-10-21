@@ -337,9 +337,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                           ),
                         );
 
-                        if (confirm == true) {
-                          await ref.read(authControllerProvider.notifier).signOut();
-                          if (mounted) context.go('/login');
+                        if (confirm == true && mounted) {
+                          ref.read(authControllerProvider.notifier).signOut();
+                          context.go('/login');
                         }
                       },
                     ),

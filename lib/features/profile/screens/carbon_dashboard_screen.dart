@@ -50,12 +50,19 @@ class CarbonDashboardScreen extends ConsumerWidget {
                 children: [
                   const Icon(Icons.eco_rounded, size: 56, color: Colors.white),
                   const SizedBox(height: 12),
-                  Text(
-                    AppFormatters.formatCo2(totalCo2),
-                    style: theme.textTheme.displayMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  TweenAnimationBuilder<double>(
+                    tween: Tween<double>(begin: 0, end: totalCo2),
+                    duration: const Duration(milliseconds: 1500),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, child) {
+                      return Text(
+                        AppFormatters.formatCo2(value),
+                        style: theme.textTheme.displayMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 6),
                   const Text(

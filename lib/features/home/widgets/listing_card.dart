@@ -83,19 +83,22 @@ class ListingCard extends StatelessWidget {
             // Image Stack Header
             Stack(
               children: [
-                SizedBox(
-                  height: 180,
-                  width: double.infinity,
-                  child: listing.images.isNotEmpty
-                      ? _buildImageWidget(listing.images.first)
-                      : Container(
-                          color: AppColors.primaryContainer,
-                          child: const Icon(
-                            Icons.inventory_2_rounded,
-                            size: 48,
-                            color: AppColors.primary,
+                Hero(
+                  tag: 'hero-listing-image-${listing.id}',
+                  child: SizedBox(
+                    height: 180,
+                    width: double.infinity,
+                    child: listing.images.isNotEmpty
+                        ? _buildImageWidget(listing.images.first)
+                        : Container(
+                            color: AppColors.primaryContainer,
+                            child: const Icon(
+                              Icons.inventory_2_rounded,
+                              size: 48,
+                              color: AppColors.primary,
+                            ),
                           ),
-                        ),
+                  ),
                 ),
 
                 // Listing Type Badge (Top Left)
@@ -139,10 +142,15 @@ class ListingCard extends StatelessWidget {
                     child: IconButton(
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
-                      icon: Icon(
-                        isFavorited ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                        color: isFavorited ? AppColors.error : Colors.white,
-                        size: 20,
+                      icon: AnimatedScale(
+                        scale: isFavorited ? 1.2 : 1.0,
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.elasticOut,
+                        child: Icon(
+                          isFavorited ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                          color: isFavorited ? AppColors.error : Colors.white,
+                          size: 20,
+                        ),
                       ),
                       onPressed: onFavoriteToggle,
                     ),

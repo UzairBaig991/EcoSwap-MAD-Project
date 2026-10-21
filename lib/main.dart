@@ -22,6 +22,32 @@ const FirebaseOptions _webFirebaseOptions = FirebaseOptions(
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Fix Flutter Web DDC Widget Inspector recursion error on Hot Reload
+  if (kIsWeb && kDebugMode) {
+    final originalOnError = FlutterError.onError;
+    FlutterError.onError = (FlutterErrorDetails details) {
+      final exceptionStr = details.exception.toString();
+      if (exceptionStr.contains('DiagnosticsNode') ||
+          exceptionStr.contains('LegacyJavaScriptObject')) {
+        // Silently swallow Flutter Web Inspector DDC serialization bug
+        return;
+      }
+      if (originalOnError != null) {
+        originalOnError(details);
+      } else {
+        FlutterError.presentError(details);
+      }
+    };
+
+    PlatformDispatcher.instance.onError = (error, stack) {
+      if (error.toString().contains('DiagnosticsNode') ||
+          error.toString().contains('LegacyJavaScriptObject')) {
+        return true; // Error handled to prevent hot reload crash on web
+      }
+      return false;
+    };
+  }
+
   // Initialize Hive for Offline Data Storage
   try {
     await Hive.initFlutter();

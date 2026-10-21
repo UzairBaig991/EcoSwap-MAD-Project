@@ -2,15 +2,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "EcoSwap (Chrome HTML)",
+            "name": "EcoSwap (Chrome)",
             "request": "launch",
             "type": "dart",
             "program": "lib/main.dart",
             "args": [
                 "-d",
                 "chrome",
-                "--web-renderer",
-                "html"
+                "--no-track-widget-creation"
             ]
         },
         {

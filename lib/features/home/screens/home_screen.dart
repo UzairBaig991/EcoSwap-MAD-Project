@@ -74,7 +74,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const Text('Sort By', style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<ListingSortOption>(
-                    value: filter.sortBy,
+                    initialValue: filter.sortBy,
                     decoration: const InputDecoration(prefixIcon: Icon(Icons.sort_rounded)),
                     items: const [
                       DropdownMenuItem(
@@ -358,70 +358,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
 
-          // Main View (Map or List)
+          // Main View (Map or List with AnimatedCrossFade)
           Expanded(
             child: listingsAsync.when(
               data: (listings) {
-                if (filter.isMapView) {
-                  if (kIsWeb) {
-                    // Web Safe Nearby Proximity View
-                    return Container(
-                      color: theme.colorScheme.surfaceVariant,
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.location_on_rounded, color: AppColors.primary, size: 24),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Nearby Items (${listings.length} items within ${filter.radiusKm.round()} km)',
-                                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Showing location addresses and proximity-sorted listings:',
-                            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                          ),
-                          const SizedBox(height: 12),
-                          Expanded(
-                            child: ListView.builder(
-                              itemCount: listings.length,
-                              itemBuilder: (context, idx) => ListingCard(
-                                listing: listings[idx],
-                                userLat: filter.userLat,
-                                userLng: filter.userLng,
-                                isFavorited: favoriteIds.contains(listings[idx].id),
-                                onFavoriteToggle: () {
-                                  ref.read(favoritesControllerProvider.notifier).toggleFavorite(listings[idx]);
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+                final isMapView = filter.isMapView;
 
-                  // Native Android & iOS Google Map
-                  return GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: LatLng(filter.userLat, filter.userLng),
-                      zoom: 12,
-                    ),
-                    onMapCreated: (controller) => _mapController = controller,
-                    markers: _buildMapMarkers(listings),
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: true,
-                    zoomControlsEnabled: false,
-                  );
-                }
-
+                Widget listViewWidget;
                 if (listings.isEmpty) {
-                  return Center(
+                  listViewWidget = Center(
                     child: Padding(
                       padding: const EdgeInsets.all(32),
                       child: Column(
@@ -459,28 +404,90 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                   );
+                } else {
+                  listViewWidget = RefreshIndicator(
+                    onRefresh: () async {
+                      ref.invalidate(nearbyListingsStreamProvider);
+                    },
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      itemCount: listings.length,
+                      itemBuilder: (context, index) {
+                        final item = listings[index];
+                        return ListingCard(
+                          listing: item,
+                          userLat: filter.userLat,
+                          userLng: filter.userLng,
+                          isFavorited: favoriteIds.contains(item.id),
+                          onFavoriteToggle: () {
+                            ref.read(favoritesControllerProvider.notifier).toggleFavorite(item);
+                          },
+                        );
+                      },
+                    ),
+                  );
                 }
 
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    ref.invalidate(nearbyListingsStreamProvider);
-                  },
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    itemCount: listings.length,
-                    itemBuilder: (context, index) {
-                      final item = listings[index];
-                      return ListingCard(
-                        listing: item,
-                        userLat: filter.userLat,
-                        userLng: filter.userLng,
-                        isFavorited: favoriteIds.contains(item.id),
-                        onFavoriteToggle: () {
-                          ref.read(favoritesControllerProvider.notifier).toggleFavorite(item);
-                        },
-                      );
-                    },
-                  ),
+                Widget mapViewWidget;
+                if (kIsWeb) {
+                  mapViewWidget = Container(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on_rounded, color: AppColors.primary, size: 24),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Nearby Items (${listings.length} items within ${filter.radiusKm.round()} km)',
+                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Showing location addresses and proximity-sorted listings:',
+                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                        ),
+                        const SizedBox(height: 12),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: listings.length,
+                            itemBuilder: (context, idx) => ListingCard(
+                              listing: listings[idx],
+                              userLat: filter.userLat,
+                              userLng: filter.userLng,
+                              isFavorited: favoriteIds.contains(listings[idx].id),
+                              onFavoriteToggle: () {
+                                ref.read(favoritesControllerProvider.notifier).toggleFavorite(listings[idx]);
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  mapViewWidget = GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(filter.userLat, filter.userLng),
+                      zoom: 12,
+                    ),
+                    onMapCreated: (controller) => _mapController = controller,
+                    markers: _buildMapMarkers(listings),
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: true,
+                    zoomControlsEnabled: false,
+                  );
+                }
+
+                return AnimatedCrossFade(
+                  firstChild: listViewWidget,
+                  secondChild: mapViewWidget,
+                  crossFadeState: isMapView ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                  duration: const Duration(milliseconds: 300),
                 );
               },
               loading: () => ListView.builder(

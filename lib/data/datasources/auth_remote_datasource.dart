@@ -64,12 +64,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       await _notifyWelcome('Email');
       return cred;
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found' || e.code == 'invalid-credential' || e.code == 'wrong-password') {
-        throw const AuthException('This email address does not exist or password is wrong. Please sign up or check your details.');
+      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+        throw const AuthException('Incorrect password. If you registered via Google, please tap "Continue with Google"!');
       }
-      throw AuthException(e.message ?? 'This email address is not registered. Please sign up first!', code: e.code);
+      if (e.code == 'user-not-found') {
+        throw const AuthException('This email is not registered yet. Please tap "Sign Up" below to create your account!');
+      }
+      throw AuthException(e.message ?? 'Sign in failed. Please check your credentials.', code: e.code);
     } catch (e) {
-      throw const AuthException('Authentication failed. This email does not exist.');
+      throw const AuthException('Authentication failed. Please check your credentials or sign up.');
     }
   }
 
@@ -171,12 +174,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     try {
-      await Future.wait([
-        _firebaseAuth.signOut(),
-        if (!kIsWeb) _googleSignIn.signOut(),
-      ]);
-    } catch (e) {
-      throw AuthException('Failed to sign out: ${e.toString()}');
+      if (!kIsWeb) {
+        try {
+          await _googleSignIn.signOut();
+        } catch (_) {}
+      }
+      await _firebaseAuth.signOut();
+    } catch (_) {
+      await _firebaseAuth.signOut();
     }
   }
 
@@ -194,7 +199,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> createUserProfile(UserModel user) async {
     try {
-      await _firestore.collection('users').doc(user.uid).set(user.toFirestore());
+      await _firestore.collection('users').doc(user.uid).set(user.toFirestore(), SetOptions(merge: true));
     } catch (e) {
       // Non-blocking fallback
     }

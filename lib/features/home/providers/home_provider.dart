@@ -148,7 +148,6 @@ final nearbyListingsStreamProvider = StreamProvider<List<ListingModel>>((ref) {
         case ListingSortOption.recentlyAdded:
           return b.createdAt.compareTo(a.createdAt);
         case ListingSortOption.nearestFirst:
-        default:
           final distA = calculateDistanceKm(
               filter.userLat, filter.userLng, a.location.lat, a.location.lng);
           final distB = calculateDistanceKm(
