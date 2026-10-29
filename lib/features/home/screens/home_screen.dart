@@ -8,6 +8,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/widgets/app_drawer.dart';
+import '../../../core/widgets/ecobot_bottom_sheet.dart';
 import '../../../data/models/listing_model.dart';
 import '../../favorites/providers/favorites_provider.dart';
 import '../providers/home_provider.dart';
@@ -328,6 +329,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
 
+          // EcoBot Smart AI Assistant Tip Banner
+          const _EcoBotTipCard(),
+
           // Search & Category Header
           Container(
             color: theme.scaffoldBackgroundColor,
@@ -552,6 +556,87 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _EcoBotTipCard extends StatefulWidget {
+  const _EcoBotTipCard();
+
+  @override
+  State<_EcoBotTipCard> createState() => _EcoBotTipCardState();
+}
+
+class _EcoBotTipCardState extends State<_EcoBotTipCard> {
+  int _tipIndex = 0;
+  final List<String> _tips = [
+    '🤖 EcoBot Tip: Reusing furniture instead of buying new saves ~45kg CO₂!',
+    '🌿 Smart Match: 3 new free items are listed within 2 km of your location.',
+    '💡 Tip: Complete weekly eco challenges to earn your "Eco Champion 🏆" badge.',
+    '♻️ Did you know? Swapping 5 items prevents 100kg of landfill waste yearly!',
+  ];
+
+  void _nextTip() {
+    setState(() {
+      _tipIndex = (_tipIndex + 1) % _tips.length;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => const EcoBotBottomSheet(),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: AppColors.impactGradient,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            const CircleAvatar(
+              backgroundColor: Colors.white24,
+              radius: 18,
+              child: Icon(Icons.psychology_rounded, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  _tips[_tipIndex],
+                  key: ValueKey<int>(_tipIndex),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded, color: Colors.white70, size: 16),
+              onPressed: _nextTip,
+              tooltip: 'Next Tip',
+            ),
+          ],
+        ),
       ),
     );
   }
