@@ -75,6 +75,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
         title: const Text('My Profile'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Settings',
+            onPressed: () => context.push('/settings'),
+          ),
+          IconButton(
             icon: const Icon(Icons.edit_outlined),
             tooltip: 'Edit Profile',
             onPressed: () => context.push('/profile/edit'),

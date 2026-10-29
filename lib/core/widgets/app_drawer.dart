@@ -139,6 +139,14 @@ class AppDrawer extends ConsumerWidget {
                     context.go('/profile');
                   },
                 ),
+                ListTile(
+                  leading: const Icon(Icons.settings_rounded, color: AppColors.primary),
+                  title: const Text('Settings'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/settings');
+                  },
+                ),
                 const Divider(),
 
                 // Dark Mode Switch

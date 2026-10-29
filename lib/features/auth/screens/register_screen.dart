@@ -25,7 +25,31 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _obscureConfirmPassword = true;
 
   @override
+  void initState() {
+    super.initState();
+    _emailController.addListener(_autoFetchNameFromEmail);
+  }
+
+  void _autoFetchNameFromEmail() {
+    final email = _emailController.text.trim();
+    if (_nameController.text.isEmpty && email.contains('@')) {
+      final prefix = email.split('@').first;
+      final formattedName = prefix
+          .split(RegExp(r'[._-]'))
+          .map((part) => part.isNotEmpty ? '${part[0].toUpperCase()}${part.substring(1)}' : '')
+          .where((p) => p.isNotEmpty)
+          .join(' ');
+      if (formattedName.isNotEmpty) {
+        setState(() {
+          _nameController.text = formattedName;
+        });
+      }
+    }
+  }
+
+  @override
   void dispose() {
+    _emailController.removeListener(_autoFetchNameFromEmail);
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();

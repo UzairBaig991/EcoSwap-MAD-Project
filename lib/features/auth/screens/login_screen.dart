@@ -112,10 +112,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                   // Logo / Header Icon
                   Center(
                     child: Container(
@@ -284,8 +284,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
           ),
         ),
       ),
-    ),
-  ),
-  );
+    );
   }
 }
