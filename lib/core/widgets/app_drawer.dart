@@ -156,6 +156,14 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.card_giftcard_rounded, color: AppColors.tertiary),
+                  title: const Text('Green Ambassador Rewards 🎁'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/referral-rewards');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.person_rounded, color: AppColors.primary),
                   title: const Text('My Profile'),
                   onTap: () {

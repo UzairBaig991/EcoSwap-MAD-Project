@@ -27,6 +27,7 @@ import '../features/notifications/screens/notifications_screen.dart';
 import '../features/events/screens/community_events_screen.dart';
 import '../features/swap_planner/screens/smart_exchange_planner_screen.dart';
 import '../features/profile/screens/personal_swap_insights_screen.dart';
+import '../features/profile/screens/referral_rewards_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -251,6 +252,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/swap-insights',
         builder: (context, state) => const PersonalSwapInsightsScreen(),
+      ),
+      GoRoute(
+        path: '/referral-rewards',
+        builder: (context, state) => const ReferralRewardsScreen(),
       ),
       GoRoute(
         path: '/notifications',
