@@ -12,9 +12,9 @@ import '../features/auth/screens/register_screen.dart';
 import '../features/onboarding/providers/onboarding_provider.dart';
 import '../features/onboarding/screens/onboarding_screen.dart';
 import '../features/home/screens/home_screen.dart';
-import '../features/profile/screens/profile_screen.dart';
-import '../features/profile/screens/edit_profile_screen.dart';
 import '../features/profile/screens/carbon_dashboard_screen.dart';
+import '../features/profile/screens/carbon_offset_pledge_screen.dart';
+import '../features/profile/screens/edit_profile_screen.dart';
 import '../features/listing/screens/create_listing_screen.dart';
 import '../features/listing/screens/edit_listing_screen.dart';
 import '../features/listing/screens/listing_detail_screen.dart';
@@ -281,6 +281,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/carbon-impact',
         builder: (context, state) => const CarbonDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/carbon-offset',
+        builder: (context, state) => const CarbonOffsetPledgeScreen(),
       ),
       GoRoute(
         path: '/listing/:id',

@@ -172,6 +172,14 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.forest_rounded, color: AppColors.primary),
+                  title: const Text('Carbon Offset & Tree Pledge 🌳'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/carbon-offset');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.person_rounded, color: AppColors.primary),
                   title: const Text('My Profile'),
                   onTap: () {
