@@ -132,6 +132,30 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.event_rounded, color: AppColors.info),
+                  title: const Text('Community Swap Events 🎪'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/community-events');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.calendar_month_rounded, color: AppColors.secondary),
+                  title: const Text('Smart Exchange Planner 🗓️'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/smart-planner');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.bar_chart_rounded, color: AppColors.tertiary),
+                  title: const Text('Personal Swap Insights 📊'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/swap-insights');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.person_rounded, color: AppColors.primary),
                   title: const Text('My Profile'),
                   onTap: () {

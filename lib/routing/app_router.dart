@@ -24,6 +24,9 @@ import '../features/chat/screens/chat_list_screen.dart';
 import '../features/chat/screens/chat_screen.dart';
 import '../features/home/screens/main_screen.dart';
 import '../features/notifications/screens/notifications_screen.dart';
+import '../features/events/screens/community_events_screen.dart';
+import '../features/swap_planner/screens/smart_exchange_planner_screen.dart';
+import '../features/profile/screens/personal_swap_insights_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -236,6 +239,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/challenges',
         builder: (context, state) => const ChallengesScreen(),
+      ),
+      GoRoute(
+        path: '/community-events',
+        builder: (context, state) => const CommunityEventsScreen(),
+      ),
+      GoRoute(
+        path: '/smart-planner',
+        builder: (context, state) => const SmartExchangePlannerScreen(),
+      ),
+      GoRoute(
+        path: '/swap-insights',
+        builder: (context, state) => const PersonalSwapInsightsScreen(),
       ),
       GoRoute(
         path: '/notifications',
