@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -225,6 +226,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       drawer: const AppDrawer(),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => const EcoBotBottomSheet(),
+          );
+        },
+        backgroundColor: AppColors.primary,
+        elevation: 4,
+        icon: const Icon(Icons.smart_toy_rounded, color: Colors.white),
+        label: const Row(
+          children: [
+            Text(
+              'EcoBot 🤖',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(width: 6),
+            CircleAvatar(
+              radius: 4,
+              backgroundColor: Colors.greenAccent,
+            ),
+          ],
+        ),
+      ),
       appBar: AppBar(
         titleSpacing: 0,
         leading: Builder(
@@ -259,6 +286,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            tooltip: 'Notifications',
+            onPressed: () => context.push('/notifications'),
+          ),
           IconButton(
             icon: const Icon(Icons.tune_rounded),
             tooltip: 'Filter & Sort',

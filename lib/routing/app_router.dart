@@ -23,6 +23,7 @@ import '../features/challenges/screens/challenges_screen.dart';
 import '../features/chat/screens/chat_list_screen.dart';
 import '../features/chat/screens/chat_screen.dart';
 import '../features/home/screens/main_screen.dart';
+import '../features/notifications/screens/notifications_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -235,6 +236,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/challenges',
         builder: (context, state) => const ChallengesScreen(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
         path: '/settings',
