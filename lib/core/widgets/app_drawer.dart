@@ -164,6 +164,14 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.volunteer_activism_rounded, color: AppColors.secondary),
+                  title: const Text('Charity & Donation Hubs 🤝'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/charity-hubs');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.person_rounded, color: AppColors.primary),
                   title: const Text('My Profile'),
                   onTap: () {
