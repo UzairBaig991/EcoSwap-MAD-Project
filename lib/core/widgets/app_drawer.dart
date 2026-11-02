@@ -196,6 +196,14 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.help_outline_rounded, color: AppColors.info),
+                  title: const Text('Help Center & FAQs ❓'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/help-center');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.person_rounded, color: AppColors.primary),
                   title: const Text('My Profile'),
                   onTap: () {

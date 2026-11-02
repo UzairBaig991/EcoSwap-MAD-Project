@@ -31,6 +31,7 @@ import '../features/profile/screens/referral_rewards_screen.dart';
 import '../features/profile/screens/charity_hubs_screen.dart';
 import '../features/profile/screens/green_living_tips_screen.dart';
 import '../features/profile/screens/neighborhood_groups_screen.dart';
+import '../features/profile/screens/help_center_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -295,6 +296,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/neighborhood-groups',
         builder: (context, state) => const NeighborhoodGroupsScreen(),
+      ),
+      GoRoute(
+        path: '/help-center',
+        builder: (context, state) => const HelpCenterScreen(),
       ),
       GoRoute(
         path: '/listing/:id',
