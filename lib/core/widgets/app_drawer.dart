@@ -180,6 +180,14 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.lightbulb_outline_rounded, color: AppColors.tertiary),
+                  title: const Text('Green Living Tips & Feed 🌿'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/green-tips');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.person_rounded, color: AppColors.primary),
                   title: const Text('My Profile'),
                   onTap: () {
