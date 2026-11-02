@@ -188,6 +188,14 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.group_work_rounded, color: AppColors.secondary),
+                  title: const Text('Neighborhood Eco-Pods 🏘️'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/neighborhood-groups');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.person_rounded, color: AppColors.primary),
                   title: const Text('My Profile'),
                   onTap: () {
