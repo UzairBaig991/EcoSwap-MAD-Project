@@ -204,6 +204,14 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.recycling_rounded, color: AppColors.primary),
+                  title: const Text('Recycling & E-Waste Locator ♻️'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/recycling-locator');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.person_rounded, color: AppColors.primary),
                   title: const Text('My Profile'),
                   onTap: () {
