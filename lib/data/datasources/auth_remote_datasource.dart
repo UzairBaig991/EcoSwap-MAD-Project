@@ -57,6 +57,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (_) {}
   }
 
+  Future<void> _sendLoginConfirmationNotice(String email) async {
+    try {
+      if (!kIsWeb) {
+        await NotificationService.instance.showLocalNotification(
+          title: 'Security Notice: New Login Detected 🛡️',
+          body: 'A successful login to EcoSwap was made using your account ($email). Confirmation email sent.',
+        );
+      }
+    } catch (_) {}
+  }
+
   @override
   Future<UserCredential> signInWithEmailAndPassword(String email, String password) async {
     try {
@@ -109,12 +120,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         final GoogleAuthProvider googleProvider = GoogleAuthProvider();
         googleProvider.addScope('email');
         googleProvider.addScope('profile');
-        googleProvider.setCustomParameters({'prompt': 'select_account'});
         cred = await _firebaseAuth.signInWithPopup(googleProvider);
       } else {
-        await _googleSignIn.signOut();
+        // Try silent sign-in first if already logged in on device/laptop browser
+        GoogleSignInAccount? googleUser = await _googleSignIn.signInSilently();
+        
+        // If not signed in silently, prompt standard sign in
+        googleUser ??= await _googleSignIn.signIn();
 
-        final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
         if (googleUser == null) {
           throw const AuthException('Google Sign-In was cancelled.');
         }
@@ -128,7 +141,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         cred = await _firebaseAuth.signInWithCredential(credential);
       }
 
-      await _notifyWelcome('Google Account');
+      final email = cred.user?.email ?? 'your account';
+      await _notifyWelcome('Google Account ($email)');
+      await _sendLoginConfirmationNotice(email);
       return cred;
     } on FirebaseAuthException catch (e) {
       final code = e.code;
