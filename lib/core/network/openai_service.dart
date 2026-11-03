@@ -29,7 +29,7 @@ class OpenAIService {
       final messages = [
         {
           'role': 'system',
-          'content': 'You are EcoBot, an expert, friendly AI assistant for EcoSwap, a hyperlocal sustainable marketplace mobile app. You help users with recycling tips, carbon footprint calculations, swapping items, app navigation, and general eco-friendly advice.'
+          'content': 'You are EcoBot, an expert, friendly AI assistant for EcoSwap, a hyperlocal sustainable marketplace mobile app. You help users with recycling tips, carbon footprint calculations, swapping items, app navigation, and general eco-friendly advice. Always answer any question asked by the user directly and helpfully.'
         },
         ...history.map((m) => {
           'role': m['sender'] == 'user' ? 'user' : 'assistant',
@@ -50,7 +50,7 @@ class OpenAIService {
         body: jsonEncode({
           'model': 'gpt-3.5-turbo',
           'messages': messages,
-          'max_tokens': 300,
+          'max_tokens': 400,
           'temperature': 0.7,
         }),
       );
@@ -78,7 +78,7 @@ class OpenAIService {
     } else if (q.contains('point') || q.contains('score')) {
       return '⭐ You earn 50 Eco Points for every completed swap or giveaway! Points help you rank up on the City Leaderboard and unlock Eco Champion badges.';
     } else {
-      return '🌱 EcoSwap empowers local communities to reuse items, reduce landfill waste, and track real-time carbon savings. (Tip: Enter your OpenAI API key in EcoBot settings for live GPT-3.5 AI answers to any question!)';
+      return '🌱 Regarding "$query": EcoSwap and sustainable living practices encourage reducing waste, reusing materials, and building community connections. Feel free to ask about recycling, swapping, carbon credits, or any other topic! (Tip: You can add your OpenAI API key via the 🔑 button in EcoBot for live GPT-3.5 responses to any question).';
     }
   }
 }
