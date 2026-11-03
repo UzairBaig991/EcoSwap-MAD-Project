@@ -12,6 +12,7 @@ import '../features/auth/screens/register_screen.dart';
 import '../features/onboarding/providers/onboarding_provider.dart';
 import '../features/onboarding/screens/onboarding_screen.dart';
 import '../features/home/screens/home_screen.dart';
+import '../features/profile/screens/profile_screen.dart';
 import '../features/profile/screens/carbon_dashboard_screen.dart';
 import '../features/profile/screens/carbon_offset_pledge_screen.dart';
 import '../features/profile/screens/edit_profile_screen.dart';
