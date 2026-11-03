@@ -123,12 +123,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
+  final authControllerState = ref.watch(authControllerProvider);
   final onboardingCompleted = ref.watch(onboardingCompletedProvider);
 
   return GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
-      final isAuthenticated = authState.value != null;
+      final isAuthenticated = authState.value != null || authControllerState.user != null;
       final location = state.matchedLocation;
 
       if (location == '/splash') {
