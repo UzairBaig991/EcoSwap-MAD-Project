@@ -156,6 +156,62 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.card_giftcard_rounded, color: AppColors.tertiary),
+                  title: const Text('Green Ambassador Rewards 🎁'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/referral-rewards');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.volunteer_activism_rounded, color: AppColors.secondary),
+                  title: const Text('Charity & Donation Hubs 🤝'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/charity-hubs');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.forest_rounded, color: AppColors.primary),
+                  title: const Text('Carbon Offset & Tree Pledge 🌳'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/carbon-offset');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.lightbulb_outline_rounded, color: AppColors.tertiary),
+                  title: const Text('Green Living Tips & Feed 🌿'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/green-tips');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.group_work_rounded, color: AppColors.secondary),
+                  title: const Text('Neighborhood Eco-Pods 🏘️'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/neighborhood-groups');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.help_outline_rounded, color: AppColors.info),
+                  title: const Text('Help Center & FAQs ❓'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/help-center');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.recycling_rounded, color: AppColors.primary),
+                  title: const Text('Recycling & E-Waste Locator ♻️'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/recycling-locator');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.person_rounded, color: AppColors.primary),
                   title: const Text('My Profile'),
                   onTap: () {

@@ -361,6 +361,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
 
+          // Smart Match Spotlight Banner
+          const _SmartMatchSpotlightBanner(),
+
           // EcoBot Smart AI Assistant Tip Banner
           const _EcoBotTipCard(),
 
@@ -669,6 +672,83 @@ class _EcoBotTipCardState extends State<_EcoBotTipCard> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SmartMatchSpotlightBanner extends StatelessWidget {
+  const _SmartMatchSpotlightBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: AppColors.ecoGradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.auto_awesome_rounded, color: Colors.amber, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'Smart Match Spotlight 🌟',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  '98% Compatibility',
+                  style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Sarah wants your Solid Oak Study Desk and owns a Vintage Bicycle you searched for!',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 14),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.primaryDark,
+              minimumSize: const Size(double.infinity, 42),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Smart Swap proposal sent to Sarah! 🔄'),
+                  backgroundColor: AppColors.success,
+                ),
+              );
+            },
+            child: const Text('Instant Propose Mutual Swap', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }

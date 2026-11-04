@@ -13,8 +13,9 @@ import '../features/onboarding/providers/onboarding_provider.dart';
 import '../features/onboarding/screens/onboarding_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
-import '../features/profile/screens/edit_profile_screen.dart';
 import '../features/profile/screens/carbon_dashboard_screen.dart';
+import '../features/profile/screens/carbon_offset_pledge_screen.dart';
+import '../features/profile/screens/edit_profile_screen.dart';
 import '../features/listing/screens/create_listing_screen.dart';
 import '../features/listing/screens/edit_listing_screen.dart';
 import '../features/listing/screens/listing_detail_screen.dart';
@@ -27,6 +28,12 @@ import '../features/notifications/screens/notifications_screen.dart';
 import '../features/events/screens/community_events_screen.dart';
 import '../features/swap_planner/screens/smart_exchange_planner_screen.dart';
 import '../features/profile/screens/personal_swap_insights_screen.dart';
+import '../features/profile/screens/referral_rewards_screen.dart';
+import '../features/profile/screens/charity_hubs_screen.dart';
+import '../features/profile/screens/green_living_tips_screen.dart';
+import '../features/profile/screens/neighborhood_groups_screen.dart';
+import '../features/profile/screens/help_center_screen.dart';
+import '../features/profile/screens/recycling_locator_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -116,12 +123,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
+  final authControllerState = ref.watch(authControllerProvider);
   final onboardingCompleted = ref.watch(onboardingCompletedProvider);
 
   return GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
-      final isAuthenticated = authState.value != null;
+      final isAuthenticated = authState.value != null || authControllerState.user != null;
       final location = state.matchedLocation;
 
       if (location == '/splash') {
@@ -253,6 +261,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const PersonalSwapInsightsScreen(),
       ),
       GoRoute(
+        path: '/referral-rewards',
+        builder: (context, state) => const ReferralRewardsScreen(),
+      ),
+      GoRoute(
+        path: '/charity-hubs',
+        builder: (context, state) => const CharityHubsScreen(),
+      ),
+      GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),
       ),
@@ -271,6 +287,26 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/carbon-impact',
         builder: (context, state) => const CarbonDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/carbon-offset',
+        builder: (context, state) => const CarbonOffsetPledgeScreen(),
+      ),
+      GoRoute(
+        path: '/green-tips',
+        builder: (context, state) => const GreenLivingTipsScreen(),
+      ),
+      GoRoute(
+        path: '/neighborhood-groups',
+        builder: (context, state) => const NeighborhoodGroupsScreen(),
+      ),
+      GoRoute(
+        path: '/help-center',
+        builder: (context, state) => const HelpCenterScreen(),
+      ),
+      GoRoute(
+        path: '/recycling-locator',
+        builder: (context, state) => const RecyclingLocatorScreen(),
       ),
       GoRoute(
         path: '/listing/:id',
