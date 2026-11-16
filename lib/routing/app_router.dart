@@ -37,7 +37,9 @@ import '../features/profile/screens/recycling_locator_screen.dart';
 import '../features/profile/screens/carbon_certificate_screen.dart';
 import '../features/profile/screens/green_guarantee_screen.dart';
 import '../features/profile/screens/zero_emission_shipping_screen.dart';
+import '../features/profile/screens/eco_packaging_calculator_screen.dart';
 import '../features/listing/screens/eco_item_inspector_screen.dart';
+import '../features/listing/screens/smart_value_estimator_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -327,6 +329,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/zero-emission-shipping',
         builder: (context, state) => const ZeroEmissionShippingScreen(),
+      ),
+      GoRoute(
+        path: '/value-estimator',
+        builder: (context, state) => const SmartValueEstimatorScreen(),
+      ),
+      GoRoute(
+        path: '/eco-packaging',
+        builder: (context, state) => const EcoPackagingCalculatorScreen(),
       ),
       GoRoute(
         path: '/listing/:id',

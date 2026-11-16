@@ -244,6 +244,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.auto_graph_rounded, color: AppColors.tertiary),
+                  title: const Text('AI Smart Value Estimator 💎'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/value-estimator');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.takeout_dining_rounded, color: AppColors.primary),
+                  title: const Text('Zero-Waste Packaging Hub 📦'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/eco-packaging');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.person_rounded, color: AppColors.primary),
                   title: const Text('My Profile'),
                   onTap: () {
