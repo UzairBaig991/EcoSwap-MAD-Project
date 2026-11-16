@@ -44,6 +44,8 @@ import '../features/favorites/screens/eco_wishlist_screen.dart';
 import '../features/challenges/screens/hall_of_fame_screen.dart';
 import '../features/listing/screens/eco_item_inspector_screen.dart';
 import '../features/listing/screens/smart_value_estimator_screen.dart';
+import '../features/listing/screens/smart_description_summarizer_screen.dart';
+import '../features/challenges/screens/carbon_leaderboard_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -357,6 +359,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/carbon-pass',
         builder: (context, state) => const CarbonNeutralPassScreen(),
+      ),
+      GoRoute(
+        path: '/carbon-leaderboard',
+        builder: (context, state) => const CarbonLeaderboardScreen(),
+      ),
+      GoRoute(
+        path: '/ai-summarizer',
+        builder: (context, state) => const SmartDescriptionSummarizerScreen(),
       ),
       GoRoute(
         path: '/listing/:id',

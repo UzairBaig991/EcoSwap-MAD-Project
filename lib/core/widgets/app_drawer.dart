@@ -276,6 +276,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.military_tech_rounded, color: AppColors.tertiary),
+                  title: const Text('City Carbon Leaderboard 🏆'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/carbon-leaderboard');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.auto_fix_high_rounded, color: AppColors.primary),
+                  title: const Text('AI Description Summarizer 🪄'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/ai-summarizer');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.emoji_events_rounded, color: AppColors.tertiary),
                   title: const Text('Community Hall of Fame 🏆'),
                   onTap: () {
