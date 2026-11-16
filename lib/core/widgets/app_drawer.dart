@@ -212,6 +212,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.view_in_ar_rounded, color: AppColors.secondary),
+                  title: const Text('Eco AR Item Inspector 📐'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/eco-inspector');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.workspace_premium_rounded, color: AppColors.tertiary),
+                  title: const Text('Official Carbon Certificate 📜'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/carbon-certificate');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.person_rounded, color: AppColors.primary),
                   title: const Text('My Profile'),
                   onTap: () {
