@@ -292,6 +292,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.gavel_rounded, color: AppColors.secondary),
+                  title: const Text('Dispute & Mediation Hub 🛡️'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/dispute-mediation');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.workspace_premium_rounded, color: AppColors.tertiary),
+                  title: const Text('Collectible Eco Badges 🏅'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/eco-badges');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.emoji_events_rounded, color: AppColors.tertiary),
                   title: const Text('Community Hall of Fame 🏆'),
                   onTap: () {
