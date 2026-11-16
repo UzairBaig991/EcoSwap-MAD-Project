@@ -228,6 +228,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.shield_rounded, color: AppColors.primary),
+                  title: const Text('EcoSwap Green Guarantee 🛡️'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/green-guarantee');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.pedal_bike_rounded, color: AppColors.secondary),
+                  title: const Text('Zero-Emission Eco Courier 🚲'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/zero-emission-shipping');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.person_rounded, color: AppColors.primary),
                   title: const Text('My Profile'),
                   onTap: () {

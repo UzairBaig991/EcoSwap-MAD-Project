@@ -35,6 +35,8 @@ import '../features/profile/screens/neighborhood_groups_screen.dart';
 import '../features/profile/screens/help_center_screen.dart';
 import '../features/profile/screens/recycling_locator_screen.dart';
 import '../features/profile/screens/carbon_certificate_screen.dart';
+import '../features/profile/screens/green_guarantee_screen.dart';
+import '../features/profile/screens/zero_emission_shipping_screen.dart';
 import '../features/listing/screens/eco_item_inspector_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 
@@ -317,6 +319,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/carbon-certificate',
         builder: (context, state) => const CarbonCertificateScreen(),
+      ),
+      GoRoute(
+        path: '/green-guarantee',
+        builder: (context, state) => const GreenGuaranteeScreen(),
+      ),
+      GoRoute(
+        path: '/zero-emission-shipping',
+        builder: (context, state) => const ZeroEmissionShippingScreen(),
       ),
       GoRoute(
         path: '/listing/:id',
