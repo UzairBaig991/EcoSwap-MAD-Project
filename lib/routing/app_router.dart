@@ -39,7 +39,9 @@ import '../features/profile/screens/green_guarantee_screen.dart';
 import '../features/profile/screens/zero_emission_shipping_screen.dart';
 import '../features/profile/screens/eco_packaging_calculator_screen.dart';
 import '../features/profile/screens/eco_carbon_credit_screen.dart';
+import '../features/profile/screens/carbon_neutral_pass_screen.dart';
 import '../features/favorites/screens/eco_wishlist_screen.dart';
+import '../features/challenges/screens/hall_of_fame_screen.dart';
 import '../features/listing/screens/eco_item_inspector_screen.dart';
 import '../features/listing/screens/smart_value_estimator_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
@@ -347,6 +349,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/carbon-credits',
         builder: (context, state) => const EcoCarbonCreditScreen(),
+      ),
+      GoRoute(
+        path: '/hall-of-fame',
+        builder: (context, state) => const HallOfFameScreen(),
+      ),
+      GoRoute(
+        path: '/carbon-pass',
+        builder: (context, state) => const CarbonNeutralPassScreen(),
       ),
       GoRoute(
         path: '/listing/:id',

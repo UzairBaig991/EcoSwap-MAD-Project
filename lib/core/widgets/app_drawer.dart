@@ -276,6 +276,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.emoji_events_rounded, color: AppColors.tertiary),
+                  title: const Text('Community Hall of Fame 🏆'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/hall-of-fame');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.workspace_premium_rounded, color: AppColors.primary),
+                  title: const Text('Carbon Neutrality Pass 🎫'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/carbon-pass');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.person_rounded, color: AppColors.primary),
                   title: const Text('My Profile'),
                   onTap: () {
