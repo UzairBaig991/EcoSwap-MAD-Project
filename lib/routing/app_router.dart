@@ -38,6 +38,8 @@ import '../features/profile/screens/carbon_certificate_screen.dart';
 import '../features/profile/screens/green_guarantee_screen.dart';
 import '../features/profile/screens/zero_emission_shipping_screen.dart';
 import '../features/profile/screens/eco_packaging_calculator_screen.dart';
+import '../features/profile/screens/eco_carbon_credit_screen.dart';
+import '../features/favorites/screens/eco_wishlist_screen.dart';
 import '../features/listing/screens/eco_item_inspector_screen.dart';
 import '../features/listing/screens/smart_value_estimator_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
@@ -337,6 +339,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/eco-packaging',
         builder: (context, state) => const EcoPackagingCalculatorScreen(),
+      ),
+      GoRoute(
+        path: '/eco-wishlist',
+        builder: (context, state) => const EcoWishlistScreen(),
+      ),
+      GoRoute(
+        path: '/carbon-credits',
+        builder: (context, state) => const EcoCarbonCreditScreen(),
       ),
       GoRoute(
         path: '/listing/:id',

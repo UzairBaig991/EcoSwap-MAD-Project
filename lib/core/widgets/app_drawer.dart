@@ -260,6 +260,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.radar_rounded, color: AppColors.secondary),
+                  title: const Text('Smart Eco-Wishlist Radar 📡'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/eco-wishlist');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primary),
+                  title: const Text('Carbon Credit Ledger 💳'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/carbon-credits');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.person_rounded, color: AppColors.primary),
                   title: const Text('My Profile'),
                   onTap: () {
