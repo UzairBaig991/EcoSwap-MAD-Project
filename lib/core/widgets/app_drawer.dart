@@ -308,6 +308,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.workspace_premium_rounded, color: AppColors.primary),
+                  title: const Text('Green Usability Warranty 🛡️'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/green-warranty');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.inventory_2_rounded, color: AppColors.secondary),
+                  title: const Text('Plastic-Free Packaging Ledger 📦'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/packaging-ledger');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.gavel_rounded, color: AppColors.secondary),
                   title: const Text('Dispute & Mediation Hub 🛡️'),
                   onTap: () {
