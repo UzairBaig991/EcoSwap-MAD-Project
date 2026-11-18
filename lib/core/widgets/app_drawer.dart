@@ -324,6 +324,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.solar_power_rounded, color: AppColors.tertiary),
+                  title: const Text('Solar Micro-Grid Hub ☀️'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/solar-grid');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.workspace_premium_rounded, color: AppColors.primary),
+                  title: const Text('Carbon Reduction Certificate 🏅'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/badge-cert');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.gavel_rounded, color: AppColors.secondary),
                   title: const Text('Dispute & Mediation Hub 🛡️'),
                   onTap: () {

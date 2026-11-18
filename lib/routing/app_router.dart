@@ -53,6 +53,8 @@ import '../features/profile/screens/eco_badges_gallery_screen.dart';
 import '../features/profile/screens/impact_passport_pdf_screen.dart';
 import '../features/profile/screens/green_warranty_screen.dart';
 import '../features/profile/screens/packaging_pledge_ledger_screen.dart';
+import '../features/profile/screens/solar_micro_grid_screen.dart';
+import '../features/profile/screens/carbon_badge_cert_screen.dart';
 import '../features/chat/screens/chat_safety_filter_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 
@@ -407,6 +409,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/packaging-ledger',
         builder: (context, state) => const PackagingPledgeLedgerScreen(),
+      ),
+      GoRoute(
+        path: '/solar-grid',
+        builder: (context, state) => const SolarMicroGridScreen(),
+      ),
+      GoRoute(
+        path: '/badge-cert',
+        builder: (context, state) => const CarbonBadgeCertScreen(),
       ),
       GoRoute(
         path: '/listing/:id',
