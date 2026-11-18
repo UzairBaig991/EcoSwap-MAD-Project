@@ -340,6 +340,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.receipt_long_rounded, color: AppColors.primary),
+                  title: const Text('Transparent Impact Ledger 📜'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/public-ledger');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.find_in_page_rounded, color: AppColors.tertiary),
+                  title: const Text('AI Condition Verifier 🔍'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/ai-condition-verifier');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.gavel_rounded, color: AppColors.secondary),
                   title: const Text('Dispute & Mediation Hub 🛡️'),
                   onTap: () {
