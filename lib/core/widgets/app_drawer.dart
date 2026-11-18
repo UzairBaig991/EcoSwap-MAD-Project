@@ -292,6 +292,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.badge_rounded, color: AppColors.primary),
+                  title: const Text('Digital Eco Passport 🛂'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/impact-passport');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.security_rounded, color: AppColors.secondary),
+                  title: const Text('Chat Safety & Shield 🛡️'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/chat-safety');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.gavel_rounded, color: AppColors.secondary),
                   title: const Text('Dispute & Mediation Hub 🛡️'),
                   onTap: () {

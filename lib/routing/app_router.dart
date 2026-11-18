@@ -50,6 +50,8 @@ import '../features/listing/screens/smart_description_summarizer_screen.dart';
 import '../features/challenges/screens/carbon_leaderboard_screen.dart';
 import '../features/profile/screens/dispute_mediation_screen.dart';
 import '../features/profile/screens/eco_badges_gallery_screen.dart';
+import '../features/profile/screens/impact_passport_pdf_screen.dart';
+import '../features/chat/screens/chat_safety_filter_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -387,6 +389,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/reforestation-parks',
         builder: (context, state) => const ReforestationPledgeScreen(),
+      ),
+      GoRoute(
+        path: '/impact-passport',
+        builder: (context, state) => const ImpactPassportPdfScreen(),
+      ),
+      GoRoute(
+        path: '/chat-safety',
+        builder: (context, state) => const ChatSafetyFilterScreen(),
       ),
       GoRoute(
         path: '/listing/:id',
