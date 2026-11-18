@@ -42,6 +42,8 @@ import '../features/profile/screens/eco_carbon_credit_screen.dart';
 import '../features/profile/screens/carbon_neutral_pass_screen.dart';
 import '../features/favorites/screens/eco_wishlist_screen.dart';
 import '../features/challenges/screens/hall_of_fame_screen.dart';
+import '../features/profile/screens/reforestation_pledge_screen.dart';
+import '../features/swap_planner/screens/eco_handoff_checklist_screen.dart';
 import '../features/listing/screens/eco_item_inspector_screen.dart';
 import '../features/listing/screens/smart_value_estimator_screen.dart';
 import '../features/listing/screens/smart_description_summarizer_screen.dart';
@@ -377,6 +379,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/eco-badges',
         builder: (context, state) => const EcoBadgesGalleryScreen(),
+      ),
+      GoRoute(
+        path: '/handoff-checklist',
+        builder: (context, state) => const EcoHandoffChecklistScreen(),
+      ),
+      GoRoute(
+        path: '/reforestation-parks',
+        builder: (context, state) => const ReforestationPledgeScreen(),
       ),
       GoRoute(
         path: '/listing/:id',

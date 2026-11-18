@@ -308,6 +308,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.fact_check_rounded, color: AppColors.primary),
+                  title: const Text('Zero-Waste Handoff Checklist 📋'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/handoff-checklist');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.forest_rounded, color: AppColors.secondary),
+                  title: const Text('Urban Tree Planting Parks 🌳'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/reforestation-parks');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.emoji_events_rounded, color: AppColors.tertiary),
                   title: const Text('Community Hall of Fame 🏆'),
                   onTap: () {
