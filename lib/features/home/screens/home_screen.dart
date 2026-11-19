@@ -412,8 +412,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               color: isSelected ? null : theme.colorScheme.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: isSelected ? Colors.transparent : theme.colorScheme.outline.withOpacity(0.3),
+                                color: isSelected ? Colors.amber.shade300 : theme.colorScheme.outline.withOpacity(0.3),
+                                width: isSelected ? 1.5 : 1.0,
                               ),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: AppColors.primary.withOpacity(0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ]
+                                  : null,
                             ),
                             child: Center(
                               child: Text(
