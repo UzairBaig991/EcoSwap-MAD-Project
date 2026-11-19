@@ -47,7 +47,7 @@ class AiConditionVerifierScreen extends ConsumerWidget {
           const SizedBox(height: 12),
 
           _buildAuditTile(theme, 'Photo Clarity & Lighting', 'High Quality (1080p+ verified)', Icons.center_focus_strong_rounded, AppColors.primary),
-          _buildAuditTile(theme, 'Surface Defect Inspection', 'No major scratches or tears detected', Icons.search_check_rounded, AppColors.primary),
+          _buildAuditTile(theme, 'Surface Defect Inspection', 'No major scratches or tears detected', Icons.saved_search_rounded, AppColors.primary),
           _buildAuditTile(theme, 'Listing Authenticity Score', '98% Genuine Item Confidence', Icons.verified_user_rounded, AppColors.tertiary),
           const SizedBox(height: 28),
 
