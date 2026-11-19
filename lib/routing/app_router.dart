@@ -56,7 +56,9 @@ import '../features/profile/screens/packaging_pledge_ledger_screen.dart';
 import '../features/profile/screens/solar_micro_grid_screen.dart';
 import '../features/profile/screens/carbon_badge_cert_screen.dart';
 import '../features/profile/screens/public_impact_ledger_screen.dart';
+import '../features/profile/screens/green_energy_credits_screen.dart';
 import '../features/listing/screens/ai_condition_verifier_screen.dart';
+import '../features/listing/screens/ai_image_quality_inspector_screen.dart';
 import '../features/chat/screens/chat_safety_filter_screen.dart';
 import '../features/settings/screens/device_sessions_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
@@ -432,6 +434,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/device-sessions',
         builder: (context, state) => const DeviceSessionsScreen(),
+      ),
+      GoRoute(
+        path: '/green-energy-credits',
+        builder: (context, state) => const GreenEnergyCreditsScreen(),
+      ),
+      GoRoute(
+        path: '/ai-photo-quality',
+        builder: (context, state) => const AiImageQualityInspectorScreen(),
       ),
       GoRoute(
         path: '/listing/:id',

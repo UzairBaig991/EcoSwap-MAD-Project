@@ -348,6 +348,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.bolt_rounded, color: AppColors.primary),
+                  title: const Text('Green Energy Credits ⚡'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/green-energy-credits');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.camera_enhance_rounded, color: AppColors.secondary),
+                  title: const Text('AI Photo Quality Inspector 📸'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/ai-photo-quality');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.receipt_long_rounded, color: AppColors.primary),
                   title: const Text('Transparent Impact Ledger 📜'),
                   onTap: () {
