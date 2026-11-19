@@ -340,6 +340,14 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.phonelink_lock_rounded, color: AppColors.primary),
+                  title: const Text('Device Sessions & Security 🔒'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/device-sessions');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.receipt_long_rounded, color: AppColors.primary),
                   title: const Text('Transparent Impact Ledger 📜'),
                   onTap: () {

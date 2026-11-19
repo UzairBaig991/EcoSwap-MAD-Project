@@ -58,6 +58,7 @@ import '../features/profile/screens/carbon_badge_cert_screen.dart';
 import '../features/profile/screens/public_impact_ledger_screen.dart';
 import '../features/listing/screens/ai_condition_verifier_screen.dart';
 import '../features/chat/screens/chat_safety_filter_screen.dart';
+import '../features/settings/screens/device_sessions_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -427,6 +428,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/ai-condition-verifier',
         builder: (context, state) => const AiConditionVerifierScreen(),
+      ),
+      GoRoute(
+        path: '/device-sessions',
+        builder: (context, state) => const DeviceSessionsScreen(),
       ),
       GoRoute(
         path: '/listing/:id',
