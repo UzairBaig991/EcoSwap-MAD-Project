@@ -52,12 +52,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
   Future<void> _handleEmailLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final email = _emailController.text.trim();
     final success = await ref.read(authControllerProvider.notifier).signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
+          email: email,
           password: _passwordController.text,
         );
 
     if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.shield_rounded, color: Colors.white),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text('Security Alert 🛡️: Successfully logged in as $email! Confirmation notice sent.'),
+              ),
+            ],
+          ),
+          backgroundColor: AppColors.primary,
+          duration: const Duration(seconds: 4),
+        ),
+      );
       context.go('/home');
     } else if (mounted) {
       final error = ref.read(authControllerProvider).errorMessage;
@@ -74,6 +90,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
   Future<void> _handleGoogleSignIn() async {
     final success = await ref.read(authControllerProvider.notifier).signInWithGoogle();
     if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.shield_rounded, color: Colors.white),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text('Security Alert 🛡️: Successfully logged in via Google! Confirmation notice sent.'),
+              ),
+            ],
+          ),
+          backgroundColor: AppColors.primary,
+          duration: Duration(seconds: 4),
+        ),
+      );
       context.go('/home');
     } else if (mounted) {
       final error = ref.read(authControllerProvider).errorMessage;
@@ -92,6 +123,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
   Future<void> _handleGuestSignIn() async {
     final success = await ref.read(authControllerProvider.notifier).signInAnonymously();
     if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Welcome, Guest Explorer! 🌱 Enjoy exploring EcoSwap.'),
+          backgroundColor: AppColors.primary,
+          duration: Duration(seconds: 3),
+        ),
+      );
       context.go('/home');
     }
   }

@@ -60,17 +60,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final email = _emailController.text.trim();
     final success = await ref.read(authControllerProvider.notifier).signUpWithEmailAndPassword(
-          email: _emailController.text.trim(),
+          email: email,
           password: _passwordController.text,
           displayName: _nameController.text.trim(),
         );
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Account created successfully! Welcome to EcoSwap 🌱'),
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.mark_email_read_rounded, color: Colors.white),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text('Welcome to EcoSwap! 🎉 Account registered for $email. Verification notice sent.'),
+              ),
+            ],
+          ),
           backgroundColor: AppColors.success,
+          duration: const Duration(seconds: 5),
         ),
       );
       context.go('/home');
