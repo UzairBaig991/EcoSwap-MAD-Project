@@ -364,6 +364,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.query_stats_rounded, color: AppColors.tertiary),
+                  title: const Text('Impact Analytics Graph 📊'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/impact-analytics');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.volunteer_activism_rounded, color: AppColors.primary),
+                  title: const Text('Volunteer Rewards Pass 🎗️'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/volunteer-pass');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.receipt_long_rounded, color: AppColors.primary),
                   title: const Text('Transparent Impact Ledger 📜'),
                   onTap: () {
