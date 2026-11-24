@@ -364,6 +364,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.mic_rounded, color: AppColors.primary),
+                  title: const Text('AI Voice Search & Guidance 🎙️'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/voice-search');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.solar_power_rounded, color: AppColors.tertiary),
+                  title: const Text('Solar Energy Badge ☀️'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/solar-badge');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.query_stats_rounded, color: AppColors.tertiary),
                   title: const Text('Impact Analytics Graph 📊'),
                   onTap: () {

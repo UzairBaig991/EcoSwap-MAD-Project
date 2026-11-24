@@ -61,7 +61,9 @@ import '../features/profile/screens/carbon_analytics_graph_screen.dart';
 import '../features/profile/screens/carbon_heatmap_screen.dart';
 import '../features/profile/screens/eco_trophy_cabinet_screen.dart';
 import '../features/profile/screens/circular_orbit_galaxy_screen.dart';
+import '../features/profile/screens/solar_impact_badge_screen.dart';
 import '../features/profile/screens/volunteer_rewards_pass_screen.dart';
+import '../features/home/screens/voice_search_guidance_screen.dart';
 import '../features/listing/screens/ai_lighting_meter_screen.dart';
 import '../features/listing/screens/ai_condition_verifier_screen.dart';
 import '../features/listing/screens/ai_image_quality_inspector_screen.dart';
@@ -472,6 +474,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/ai-lighting-meter',
         builder: (context, state) => const AiLightingMeterScreen(),
+      ),
+      GoRoute(
+        path: '/voice-search',
+        builder: (context, state) => const VoiceSearchGuidanceScreen(),
+      ),
+      GoRoute(
+        path: '/solar-badge',
+        builder: (context, state) => const SolarImpactBadgeScreen(),
       ),
       GoRoute(
         path: '/listing/:id',
