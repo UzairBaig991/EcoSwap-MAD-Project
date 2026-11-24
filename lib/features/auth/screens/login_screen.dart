@@ -39,6 +39,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
 
     _animController.forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkExistingSession();
+    });
+  }
+
+  void _checkExistingSession() {
+    final user = ref.read(authControllerProvider).user;
+    if (user != null && mounted) {
+      context.go('/home');
+    }
   }
 
   @override
@@ -187,7 +197,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
+
+                      if (authState.user != null) ...[
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryContainer,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.primary, width: 1.5),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.account_circle_rounded, color: AppColors.primary, size: 36),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Welcome back, ${authState.user?.displayName ?? "Swapper"}!', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                                    const Text('Active session found. Tap to enter directly.', style: TextStyle(fontSize: 11.5, color: AppColors.primaryDark)),
+                                  ],
+                                ),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  minimumSize: Size.zero,
+                                ),
+                                onPressed: () => context.go('/home'),
+                                child: const Text('Enter →', style: TextStyle(fontSize: 12)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
 
                       // Email Field
                       TextFormField(
