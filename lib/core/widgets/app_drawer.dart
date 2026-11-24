@@ -396,6 +396,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.public_rounded, color: AppColors.primary),
+                  title: const Text('Impact Orbit Galaxy 🌌'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/orbit-galaxy');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.wb_incandescent_rounded, color: AppColors.tertiary),
+                  title: const Text('AI Lighting & Meter 💡'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/ai-lighting-meter');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.receipt_long_rounded, color: AppColors.primary),
                   title: const Text('Transparent Impact Ledger 📜'),
                   onTap: () {

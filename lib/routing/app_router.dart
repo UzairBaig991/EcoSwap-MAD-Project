@@ -60,7 +60,9 @@ import '../features/profile/screens/green_energy_credits_screen.dart';
 import '../features/profile/screens/carbon_analytics_graph_screen.dart';
 import '../features/profile/screens/carbon_heatmap_screen.dart';
 import '../features/profile/screens/eco_trophy_cabinet_screen.dart';
+import '../features/profile/screens/circular_orbit_galaxy_screen.dart';
 import '../features/profile/screens/volunteer_rewards_pass_screen.dart';
+import '../features/listing/screens/ai_lighting_meter_screen.dart';
 import '../features/listing/screens/ai_condition_verifier_screen.dart';
 import '../features/listing/screens/ai_image_quality_inspector_screen.dart';
 import '../features/chat/screens/chat_safety_filter_screen.dart';
@@ -462,6 +464,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/trophy-cabinet',
         builder: (context, state) => const EcoTrophyCabinetScreen(),
+      ),
+      GoRoute(
+        path: '/orbit-galaxy',
+        builder: (context, state) => const CircularOrbitGalaxyScreen(),
+      ),
+      GoRoute(
+        path: '/ai-lighting-meter',
+        builder: (context, state) => const AiLightingMeterScreen(),
       ),
       GoRoute(
         path: '/listing/:id',
