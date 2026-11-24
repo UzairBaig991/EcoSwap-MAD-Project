@@ -68,6 +68,8 @@ import '../features/listing/screens/ai_lighting_meter_screen.dart';
 import '../features/listing/screens/ai_condition_verifier_screen.dart';
 import '../features/listing/screens/ai_image_quality_inspector_screen.dart';
 import '../features/chat/screens/chat_safety_filter_screen.dart';
+import '../features/listing/screens/draft_recovery_screen.dart';
+import '../features/settings/screens/quiet_hours_scheduler_screen.dart';
 import '../features/settings/screens/device_sessions_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 
@@ -482,6 +484,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/solar-badge',
         builder: (context, state) => const SolarImpactBadgeScreen(),
+      ),
+      GoRoute(
+        path: '/draft-recovery',
+        builder: (context, state) => const DraftRecoveryScreen(),
+      ),
+      GoRoute(
+        path: '/quiet-hours',
+        builder: (context, state) => const QuietHoursSchedulerScreen(),
       ),
       GoRoute(
         path: '/listing/:id',

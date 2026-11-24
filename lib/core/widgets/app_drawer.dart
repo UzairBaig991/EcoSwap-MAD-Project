@@ -380,6 +380,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.edit_note_rounded, color: AppColors.tertiary),
+                  title: const Text('Saved Listing Drafts 📝'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/draft-recovery');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.bedtime_rounded, color: AppColors.primary),
+                  title: const Text('Notification Quiet Hours 🌙'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/quiet-hours');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.query_stats_rounded, color: AppColors.tertiary),
                   title: const Text('Impact Analytics Graph 📊'),
                   onTap: () {
