@@ -380,6 +380,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.local_fire_department_rounded, color: AppColors.tertiary),
+                  title: const Text('CO₂ Offset Heatmap 📉'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/carbon-heatmap');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.workspace_premium_rounded, color: AppColors.primary),
+                  title: const Text('Shaded Trophy Cabinet 🏆'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/trophy-cabinet');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.receipt_long_rounded, color: AppColors.primary),
                   title: const Text('Transparent Impact Ledger 📜'),
                   onTap: () {

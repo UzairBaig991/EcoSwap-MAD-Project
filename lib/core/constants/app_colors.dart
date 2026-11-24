@@ -40,6 +40,33 @@ class AppColors {
     end: Alignment.bottomRight,
   );
 
+  static const LinearGradient glassGradient = LinearGradient(
+    colors: [Color(0x33FFFFFF), Color(0x0FFFFFFF)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient darkShadeGradient = LinearGradient(
+    colors: [Color(0xFF0F1715), Color(0xFF00221C), Color(0xFF004D40)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  static const List<BoxShadow> cardShadingShadows = [
+    BoxShadow(
+      color: Color(0x11000000),
+      blurRadius: 16,
+      spreadRadius: 2,
+      offset: Offset(0, 6),
+    ),
+    BoxShadow(
+      color: Color(0x0B00695C),
+      blurRadius: 24,
+      spreadRadius: 4,
+      offset: Offset(0, 8),
+    ),
+  ];
+
   // Background & Surface (Light)
   static const Color backgroundLight = Color(0xFFF4F7F6);
   static const Color surfaceLight = Color(0xFFFFFFFF);

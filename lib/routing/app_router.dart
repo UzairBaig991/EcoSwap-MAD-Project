@@ -58,6 +58,8 @@ import '../features/profile/screens/carbon_badge_cert_screen.dart';
 import '../features/profile/screens/public_impact_ledger_screen.dart';
 import '../features/profile/screens/green_energy_credits_screen.dart';
 import '../features/profile/screens/carbon_analytics_graph_screen.dart';
+import '../features/profile/screens/carbon_heatmap_screen.dart';
+import '../features/profile/screens/eco_trophy_cabinet_screen.dart';
 import '../features/profile/screens/volunteer_rewards_pass_screen.dart';
 import '../features/listing/screens/ai_condition_verifier_screen.dart';
 import '../features/listing/screens/ai_image_quality_inspector_screen.dart';
@@ -452,6 +454,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/volunteer-pass',
         builder: (context, state) => const VolunteerRewardsPassScreen(),
+      ),
+      GoRoute(
+        path: '/carbon-heatmap',
+        builder: (context, state) => const CarbonHeatmapScreen(),
+      ),
+      GoRoute(
+        path: '/trophy-cabinet',
+        builder: (context, state) => const EcoTrophyCabinetScreen(),
       ),
       GoRoute(
         path: '/listing/:id',
