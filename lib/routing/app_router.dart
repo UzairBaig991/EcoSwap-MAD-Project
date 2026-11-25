@@ -63,6 +63,8 @@ import '../features/profile/screens/eco_trophy_cabinet_screen.dart';
 import '../features/profile/screens/circular_orbit_galaxy_screen.dart';
 import '../features/profile/screens/solar_impact_badge_screen.dart';
 import '../features/profile/screens/volunteer_rewards_pass_screen.dart';
+import '../features/profile/screens/micro_donation_ledger_screen.dart';
+import '../features/profile/screens/eco_transport_mileage_screen.dart';
 import '../features/home/screens/voice_search_guidance_screen.dart';
 import '../features/listing/screens/ai_lighting_meter_screen.dart';
 import '../features/listing/screens/ai_condition_verifier_screen.dart';
@@ -492,6 +494,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/quiet-hours',
         builder: (context, state) => const QuietHoursSchedulerScreen(),
+      ),
+      GoRoute(
+        path: '/micro-donations',
+        builder: (context, state) => const MicroDonationLedgerScreen(),
+      ),
+      GoRoute(
+        path: '/eco-transport',
+        builder: (context, state) => const EcoTransportMileageScreen(),
       ),
       GoRoute(
         path: '/listing/:id',

@@ -16,7 +16,7 @@ class _QuietHoursSchedulerScreenState extends ConsumerState<QuietHoursSchedulerS
   TimeOfDay _endTime = const TimeOfDay(hour: 7, minute: 0);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(

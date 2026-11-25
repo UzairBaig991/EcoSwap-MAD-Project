@@ -396,6 +396,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.favorite_rounded, color: AppColors.primary),
+                  title: const Text('Eco Micro-Donation Ledger 💚'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/micro-donations');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.directions_walk_rounded, color: AppColors.secondary),
+                  title: const Text('Eco Transport Meter 🚶'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/eco-transport');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.query_stats_rounded, color: AppColors.tertiary),
                   title: const Text('Impact Analytics Graph 📊'),
                   onTap: () {
