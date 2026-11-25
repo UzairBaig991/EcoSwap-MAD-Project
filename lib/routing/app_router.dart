@@ -71,6 +71,8 @@ import '../features/listing/screens/ai_condition_verifier_screen.dart';
 import '../features/listing/screens/ai_image_quality_inspector_screen.dart';
 import '../features/chat/screens/chat_safety_filter_screen.dart';
 import '../features/listing/screens/draft_recovery_screen.dart';
+import '../features/profile/screens/reforestation_tracker_screen.dart';
+import '../features/profile/screens/repair_refurbish_hub_screen.dart';
 import '../features/settings/screens/quiet_hours_scheduler_screen.dart';
 import '../features/settings/screens/device_sessions_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
@@ -502,6 +504,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/eco-transport',
         builder: (context, state) => const EcoTransportMileageScreen(),
+      ),
+      GoRoute(
+        path: '/reforestation-tracker',
+        builder: (context, state) => const ReforestationTrackerScreen(),
+      ),
+      GoRoute(
+        path: '/repair-hub',
+        builder: (context, state) => const RepairRefurbishHubScreen(),
       ),
       GoRoute(
         path: '/listing/:id',

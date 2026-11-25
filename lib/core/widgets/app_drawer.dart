@@ -412,6 +412,22 @@ class AppDrawer extends ConsumerWidget {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.park_rounded, color: AppColors.primary),
+                  title: const Text('Urban Reforestation Tracker 🌲'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/reforestation-tracker');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.handyman_rounded, color: AppColors.tertiary),
+                  title: const Text('Repair & Refurbish Hub 🛠️'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/repair-hub');
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.query_stats_rounded, color: AppColors.tertiary),
                   title: const Text('Impact Analytics Graph 📊'),
                   onTap: () {
