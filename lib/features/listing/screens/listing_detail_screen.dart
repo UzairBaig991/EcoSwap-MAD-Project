@@ -30,33 +30,34 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
   Widget _buildImageWidget(String url) {
     if (url.startsWith('data:image')) {
       try {
-        final base64Data = url.split(',').last;
+        final base64Data = url.split(',').last.replaceAll(RegExp(r'\s+'), '');
         final bytes = base64Decode(base64Data);
-        return Image.memory(
-          bytes,
-          fit: BoxFit.cover,
-          width: double.infinity,
-        );
-      } catch (_) {
-        return Container(
-          color: AppColors.primaryContainer,
-          child: const Icon(Icons.image_not_supported_rounded, color: AppColors.primary, size: 48),
-        );
-      }
+        if (bytes.isNotEmpty) {
+          return Image.memory(
+            bytes,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            errorBuilder: (_, __, ___) => _buildFallbackDetailImage(),
+          );
+        }
+      } catch (_) {}
+      return _buildFallbackDetailImage();
     }
 
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       try {
         final filePath = url.startsWith('file://') ? url.replaceFirst('file://', '') : url;
         final file = File(filePath);
-        if (file.existsSync()) {
+        if (file.existsSync() && file.lengthSync() > 0) {
           return Image.file(
             file,
             fit: BoxFit.cover,
             width: double.infinity,
+            errorBuilder: (_, __, ___) => _buildFallbackDetailImage(),
           );
         }
       } catch (_) {}
+      return _buildFallbackDetailImage();
     }
 
     return CachedNetworkImage(
@@ -67,7 +68,18 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
         color: Colors.grey.shade200,
         child: const Center(child: CircularProgressIndicator()),
       ),
-      errorWidget: (_, __, ___) => Container(
+      errorWidget: (_, __, ___) => _buildFallbackDetailImage(),
+    );
+  }
+
+  Widget _buildFallbackDetailImage() {
+    return Container(
+      color: AppColors.primaryContainer,
+      child: const Center(
+        child: Icon(Icons.inventory_2_rounded, color: AppColors.primary, size: 48),
+      ),
+    );
+  }
         color: AppColors.primaryContainer,
         child: const Icon(Icons.broken_image_rounded, color: AppColors.primary, size: 48),
       ),

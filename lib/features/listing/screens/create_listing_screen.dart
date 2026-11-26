@@ -217,11 +217,15 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
                             width: 100,
                             height: 100,
                             margin: const EdgeInsets.only(right: 12),
-                            decoration: BoxDecoration(
+                            child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              image: DecorationImage(
-                                image: FileImage(file),
+                              child: Image.file(
+                                file,
                                 fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Container(
+                                  color: AppColors.primaryContainer,
+                                  child: const Icon(Icons.image_not_supported_rounded, color: AppColors.primary),
+                                ),
                               ),
                             ),
                           ),
