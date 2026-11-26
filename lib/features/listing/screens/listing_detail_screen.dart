@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,6 +43,20 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
           child: const Icon(Icons.image_not_supported_rounded, color: AppColors.primary, size: 48),
         );
       }
+    }
+
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      try {
+        final filePath = url.startsWith('file://') ? url.replaceFirst('file://', '') : url;
+        final file = File(filePath);
+        if (file.existsSync()) {
+          return Image.file(
+            file,
+            fit: BoxFit.cover,
+            width: double.infinity,
+          );
+        }
+      } catch (_) {}
     }
 
     return CachedNetworkImage(
