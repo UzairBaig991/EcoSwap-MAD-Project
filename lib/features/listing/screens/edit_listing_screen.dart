@@ -110,6 +110,63 @@ class _EditListingScreenState extends ConsumerState<EditListingScreen> {
     }
   }
 
+  Widget _buildImageWidget(String url) {
+    if (url.startsWith('data:image')) {
+      try {
+        final base64Data = url.split(',').last.replaceAll(RegExp(r'\s+'), '');
+        final bytes = base64Decode(base64Data);
+        if (bytes.isNotEmpty) {
+          return Image.memory(
+            bytes,
+            fit: BoxFit.cover,
+            width: 90,
+            height: 90,
+            errorBuilder: (_, __, ___) => _buildFallbackImage(),
+          );
+        }
+      } catch (_) {}
+      return _buildFallbackImage();
+    }
+
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      try {
+        final filePath = url.startsWith('file://') ? url.replaceFirst('file://', '') : url;
+        final file = File(filePath);
+        if (file.existsSync() && file.lengthSync() > 0) {
+          return Image.file(
+            file,
+            fit: BoxFit.cover,
+            width: 90,
+            height: 90,
+            errorBuilder: (_, __, ___) => _buildFallbackImage(),
+          );
+        }
+      } catch (_) {}
+      return _buildFallbackImage();
+    }
+
+    return CachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+      width: 90,
+      height: 90,
+      placeholder: (_, __) => Container(
+        color: Colors.grey.shade200,
+        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      ),
+      errorWidget: (_, __, ___) => _buildFallbackImage(),
+    );
+  }
+
+  Widget _buildFallbackImage() {
+    return Container(
+      color: AppColors.primaryContainer,
+      child: const Center(
+        child: Icon(Icons.inventory_2_rounded, color: AppColors.primary, size: 28),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final listingAsync = ref.watch(singleListingProvider(widget.listingId));
@@ -183,7 +240,7 @@ class _EditListingScreenState extends ConsumerState<EditListingScreen> {
                                   margin: const EdgeInsets.only(right: 8),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
-                                    child: CachedNetworkImage(imageUrl: url, fit: BoxFit.cover),
+                                    child: _buildImageWidget(url),
                                   ),
                                 ),
                                 Positioned(
@@ -206,9 +263,13 @@ class _EditListingScreenState extends ConsumerState<EditListingScreen> {
                                   width: 90,
                                   height: 90,
                                   margin: const EdgeInsets.only(right: 8),
-                                  decoration: BoxDecoration(
+                                  child: ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
-                                    image: DecorationImage(image: FileImage(file), fit: BoxFit.cover),
+                                    child: Image.file(
+                                      file,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => _buildFallbackImage(),
+                                    ),
                                   ),
                                 ),
                                 Positioned(
