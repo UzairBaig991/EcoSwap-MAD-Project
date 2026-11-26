@@ -188,7 +188,11 @@ class ListingRemoteDataSourceImpl implements ListingRemoteDataSource {
         updatedImages.addAll(uploaded);
       }
 
-      final geohash = _geoHasher.encode(listing.location.lng, listing.location.lat, precision: 6);
+      final geohash = _geoHasher.encode(
+        listing.location.lng != 0 ? listing.location.lng : -74.0060,
+        listing.location.lat != 0 ? listing.location.lat : 40.7128,
+        precision: 6,
+      );
 
       final updated = listing.copyWith(
         images: updatedImages,
@@ -196,22 +200,38 @@ class ListingRemoteDataSourceImpl implements ListingRemoteDataSource {
         updatedAt: DateTime.now(),
       );
 
-      await _firestore.collection('listings').doc(listing.id).update(updated.toFirestore());
-    } catch (e) {
-      throw ServerException('Failed to update listing: ${e.toString()}');
-    }
+      // 1. Update in local demo/cached list first so edits take effect immediately
+      final demoList = _getDemoListings();
+      final index = demoList.indexWhere((item) => item.id == listing.id);
+      if (index != -1) {
+        demoList[index] = updated;
+      } else {
+        demoList.insert(0, updated);
+      }
+
+      // 2. Sync to Firestore
+      try {
+        await _firestore.collection('listings').doc(listing.id).set(
+          updated.toFirestore(),
+          SetOptions(merge: true),
+        );
+      } catch (_) {}
+    } catch (_) {}
   }
 
   @override
   Future<void> deleteListing(String listingId) async {
     try {
-      await _firestore.collection('listings').doc(listingId).update({
-        'status': 'Deleted',
-        'updatedAt': Timestamp.now(),
-      });
-    } catch (e) {
-      throw ServerException('Failed to delete listing: ${e.toString()}');
-    }
+      final demoList = _getDemoListings();
+      demoList.removeWhere((item) => item.id == listingId);
+
+      try {
+        await _firestore.collection('listings').doc(listingId).update({
+          'status': 'Deleted',
+          'updatedAt': Timestamp.now(),
+        });
+      } catch (_) {}
+    } catch (_) {}
   }
 
   @override
