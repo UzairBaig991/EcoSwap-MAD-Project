@@ -79,7 +79,7 @@ class DraftRecoveryScreen extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          const CircleAvatar(
+          CircleAvatar(
             backgroundColor: AppColors.primaryContainer,
             child: Icon(icon, color: AppColors.primary, size: 22),
           ),
