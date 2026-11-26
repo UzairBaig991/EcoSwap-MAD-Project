@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -41,6 +42,21 @@ class ListingCard extends StatelessWidget {
           child: const Icon(Icons.image_not_supported_rounded, color: AppColors.primary, size: 36),
         );
       }
+    }
+
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      try {
+        final filePath = url.startsWith('file://') ? url.replaceFirst('file://', '') : url;
+        final file = File(filePath);
+        if (file.existsSync()) {
+          return Image.file(
+            file,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+          );
+        }
+      } catch (_) {}
     }
 
     return CachedNetworkImage(

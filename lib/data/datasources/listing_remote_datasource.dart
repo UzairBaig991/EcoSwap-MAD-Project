@@ -81,21 +81,36 @@ class ListingRemoteDataSourceImpl implements ListingRemoteDataSource {
 
     for (int i = 0; i < files.length; i++) {
       try {
-        final compressedFile = await _compressImage(files[i]);
+        final file = files[i];
+        if (!file.existsSync()) {
+          continue;
+        }
 
         // 1. Try Free Cloudinary Image Upload
-        final cloudinaryUrl = await CloudinaryService.uploadImage(compressedFile);
+        try {
+          final compressedFile = await _compressImage(file);
+          final cloudinaryUrl = await CloudinaryService.uploadImage(compressedFile);
+          if (cloudinaryUrl != null && cloudinaryUrl.isNotEmpty) {
+            imageUrls.add(cloudinaryUrl);
+            continue;
+          }
+        } catch (_) {}
 
-        if (cloudinaryUrl != null && cloudinaryUrl.isNotEmpty) {
-          imageUrls.add(cloudinaryUrl);
-        } else {
-          // 2. Fallback: Compressed Base64 Data URI
+        // 2. Fallback: Base64 Data URI
+        try {
+          final compressedFile = await _compressImage(file);
           final bytes = await compressedFile.readAsBytes();
           final base64String = base64Encode(bytes);
           imageUrls.add('data:image/jpeg;base64,$base64String');
-        }
+          continue;
+        } catch (_) {}
+
+        // 3. Fallback: Direct Local File Path
+        imageUrls.add(file.path);
       } catch (_) {
-        // Safe fallback if compressed file fails
+        if (files[i].existsSync()) {
+          imageUrls.add(files[i].path);
+        }
       }
     }
 
