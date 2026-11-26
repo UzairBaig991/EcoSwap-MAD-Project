@@ -28,41 +28,59 @@ class ListingCard extends StatelessWidget {
   Widget _buildImageWidget(String url) {
     if (url.startsWith('data:image')) {
       try {
-        final base64Data = url.split(',').last;
+        final base64Data = url.split(',').last.replaceAll(RegExp(r'\s+'), '');
         final bytes = base64Decode(base64Data);
-        return Image.memory(
-          bytes,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-        );
-      } catch (_) {
-        return Container(
-          color: AppColors.primaryContainer,
-          child: const Icon(Icons.image_not_supported_rounded, color: AppColors.primary, size: 36),
-        );
-      }
+        if (bytes.isNotEmpty) {
+          return Image.memory(
+            bytes,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorBuilder: (_, __, ___) => _buildFallbackImage(),
+          );
+        }
+      } catch (_) {}
+      return _buildFallbackImage();
     }
 
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       try {
         final filePath = url.startsWith('file://') ? url.replaceFirst('file://', '') : url;
         final file = File(filePath);
-        if (file.existsSync()) {
+        if (file.existsSync() && file.lengthSync() > 0) {
           return Image.file(
             file,
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
+            errorBuilder: (_, __, ___) => _buildFallbackImage(),
           );
         }
       } catch (_) {}
+      return _buildFallbackImage();
     }
 
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,
       width: double.infinity,
+      height: double.infinity,
+      placeholder: (_, __) => Container(
+        color: Colors.grey.shade200,
+        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      ),
+      errorWidget: (_, __, ___) => _buildFallbackImage(),
+    );
+  }
+
+  Widget _buildFallbackImage() {
+    return Container(
+      color: AppColors.primaryContainer,
+      child: const Center(
+        child: Icon(Icons.inventory_2_rounded, color: AppColors.primary, size: 40),
+      ),
+    );
+  }
       height: double.infinity,
       placeholder: (_, __) => Container(
         color: Colors.grey.shade200,

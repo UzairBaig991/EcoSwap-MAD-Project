@@ -38,21 +38,29 @@ class ListingRemoteDataSourceImpl implements ListingRemoteDataSource {
 
   Future<File> _compressImage(File file) async {
     try {
-      final filePath = file.absolute.path;
-      final lastIndex = filePath.lastIndexOf(RegExp(r'.png|.jp'));
-      final splitted = filePath.substring(0, (lastIndex >= 0 ? lastIndex : filePath.length));
-      final outPath = "${splitted}_out.jpg";
+      if (!file.existsSync() || file.lengthSync() == 0) {
+        return file;
+      }
 
-      final compressedXFile = await FlutterImageCompress.compressAndGetFile(
-        file.absolute.path,
-        outPath,
-        quality: 70,
-        minWidth: 1024,
-        minHeight: 1024,
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty) {
+        return file;
+      }
+
+      final result = await FlutterImageCompress.compressWithList(
+        bytes,
+        quality: 75,
+        minWidth: 800,
+        minHeight: 800,
       );
 
-      if (compressedXFile != null) {
-        return File(compressedXFile.path);
+      if (result.isNotEmpty) {
+        final tempDir = Directory.systemTemp;
+        final tempFile = File('${tempDir.path}/img_${DateTime.now().microsecondsSinceEpoch}.jpg');
+        await tempFile.writeAsBytes(result);
+        if (tempFile.existsSync() && tempFile.lengthSync() > 0) {
+          return tempFile;
+        }
       }
       return file;
     } catch (_) {
@@ -82,7 +90,7 @@ class ListingRemoteDataSourceImpl implements ListingRemoteDataSource {
     for (int i = 0; i < files.length; i++) {
       try {
         final file = files[i];
-        if (!file.existsSync()) {
+        if (!file.existsSync() || file.lengthSync() == 0) {
           continue;
         }
 
@@ -90,25 +98,28 @@ class ListingRemoteDataSourceImpl implements ListingRemoteDataSource {
         try {
           final compressedFile = await _compressImage(file);
           final cloudinaryUrl = await CloudinaryService.uploadImage(compressedFile);
-          if (cloudinaryUrl != null && cloudinaryUrl.isNotEmpty) {
+          if (cloudinaryUrl != null && cloudinaryUrl.isNotEmpty && cloudinaryUrl.startsWith('http')) {
             imageUrls.add(cloudinaryUrl);
             continue;
           }
         } catch (_) {}
 
-        // 2. Fallback: Base64 Data URI
+        // 2. Base64 Data URI from raw file bytes
         try {
-          final compressedFile = await _compressImage(file);
-          final bytes = await compressedFile.readAsBytes();
-          final base64String = base64Encode(bytes);
-          imageUrls.add('data:image/jpeg;base64,$base64String');
-          continue;
+          final bytes = await file.readAsBytes();
+          if (bytes.isNotEmpty) {
+            final base64String = base64Encode(bytes);
+            imageUrls.add('data:image/jpeg;base64,$base64String');
+            continue;
+          }
         } catch (_) {}
 
-        // 3. Fallback: Direct Local File Path
-        imageUrls.add(file.path);
+        // 3. Direct Local File Path
+        if (file.path.isNotEmpty) {
+          imageUrls.add(file.path);
+        }
       } catch (_) {
-        if (files[i].existsSync()) {
+        if (files[i].existsSync() && files[i].lengthSync() > 0) {
           imageUrls.add(files[i].path);
         }
       }
